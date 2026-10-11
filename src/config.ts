@@ -1,6 +1,12 @@
 export type QuotaConfig = {
   intervalMs: number;
-  endpoint: string;
+  /**
+   * User-supplied endpoint override. `null` means "use the active
+   * provider's first endpoint" — endpoint is a per-provider concern,
+   * not a global one, and forcing a single global default would
+   * route MiniMax traffic to the ZAI host (and vice versa).
+   */
+  endpoint: string | null;
   timeoutMs: number;
   gaugeWidth: number;
   panel: boolean;
@@ -18,7 +24,7 @@ export type QuotaConfig = {
 
 export const DEFAULT_CONFIG: Readonly<QuotaConfig> = {
   intervalMs: 60000,
-  endpoint: "https://api.z.ai/api/monitor/usage/quota/limit",
+  endpoint: null,
   timeoutMs: 8000,
   gaugeWidth: 16,
   panel: true,

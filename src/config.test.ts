@@ -6,7 +6,7 @@ describe("resolveConfig", () => {
     const { config, warnings } = resolveConfig({});
 
     expect(config.intervalMs).toBe(60000);
-    expect(config.endpoint).toBe("https://api.z.ai/api/monitor/usage/quota/limit");
+    expect(config.endpoint).toBeNull();
     expect(config.timeoutMs).toBe(8000);
     expect(config.gaugeWidth).toBe(16);
     expect(config.panel).toBe(true);
@@ -122,7 +122,7 @@ describe("resolveConfig", () => {
 
   test("endpoint: whitespace-only env keeps default with warning, valid URL passes through", () => {
     const blank = resolveConfig({ ZAI_QUOTA_ENDPOINT: "  " });
-    expect(blank.config.endpoint).toBe("https://api.z.ai/api/monitor/usage/quota/limit");
+    expect(blank.config.endpoint).toBeNull();
     expect(blank.warnings.some((w) => w.includes("endpoint"))).toBe(true);
 
     const valid = resolveConfig({ ZAI_QUOTA_ENDPOINT: "https://example.test/quota" });
@@ -149,6 +149,7 @@ describe("resolveConfig", () => {
 
     const def = resolveConfig({});
     expect(def.config.endpoint).toBe(DEFAULT_CONFIG.endpoint);
+    expect(def.config.endpoint).toBeNull();
     expect(def.warnings).toEqual([]);
   });
 
