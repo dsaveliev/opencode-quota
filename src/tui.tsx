@@ -412,6 +412,21 @@ export async function createTuiPlugin(
     if (!id) return
     switchActiveProvider(resolve(api.state?.session?.get(id)?.model?.providerID as string | undefined))
   })
+  // Fallback: opencode sometimes delivers model/agent changes via the
+  // generic session.updated event (carrying the new model in info.model)
+  // rather than session.next.model.switched. Re-resolve from state and
+  // switch only if the active provider actually changed — the no-op guard
+  // keeps the refresh engine from firing on every per-message update.
+  const offSessionUpdated = api.event.on("session.updated", (e: any) => {
+    const sid = (e?.properties?.sessionID as string | undefined) ??
+      api.route?.current?.params?.sessionID
+    if (!sid) return
+    const pid = api.state?.session?.get(sid)?.model?.providerID as string | undefined
+    const next = resolve(pid)
+    if (next == null && activeProvider() == null) return
+    if (next?.id === activeProvider()?.id) return
+    switchActiveProvider(next)
+  })
 
   // No UI surface enabled -> no register call at all (an empty slots object
   // would be dead wiring). Polling and the /quota-runway command stay live.

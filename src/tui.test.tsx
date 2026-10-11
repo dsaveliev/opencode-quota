@@ -367,6 +367,37 @@ describe("createTuiPlugin wiring", () => {
     else process.env.MINIMAX_API_KEY = savedMiniMax
   })
 
+  test("session.updated with a new provider re-resolves activeProvider and starts a fresh fetch", async () => {
+    // Repro for the second reported case: the user is in MiniMax, the panel
+    // keeps showing "Z.ai Runway". The session.next.model.switched handler
+    // is supposed to fire, but in some opencode flows the relevant signal
+    // is the generic session.updated carrying the new model. The plugin
+    // must re-resolve and follow it, otherwise the panel sits on a stale
+    // provider for the entire session.
+    const savedMiniMax = process.env.MINIMAX_API_KEY
+    process.env.MINIMAX_API_KEY = "test-minimax-token"
+    const f = fakeApi()
+    await createTuiPlugin(f.api, OPT, {})
+    pendingDispose.push(() => f.handlers.get("__dispose")?.())
+    await tick()
+    expect(fetchCalls).toBe(1) // Zhipu initial
+
+    // Pretend the user switched the session to MiniMax without firing the
+    // model.switched event (it lands via session.updated instead).
+    f.api.state.session.get = (_id: string) => ({
+      model: { id: "minimax-coding-plan/glm-5.3", providerID: "minimax-coding-plan" },
+    })
+    const handler = f.handlers.get("session.updated")
+    expect(handler).toBeDefined()
+    handler({ properties: { sessionID: "test-session", info: { model: { providerID: "minimax-coding-plan" } } } })
+    await tick()
+
+    expect(fetchCalls).toBe(2) // Zhipu initial + MiniMax after session.updated
+
+    if (savedMiniMax === undefined) delete process.env.MINIMAX_API_KEY
+    else process.env.MINIMAX_API_KEY = savedMiniMax
+  })
+
   test("session.idle within intervalMs/2 is throttled away", async () => {
     const f = fakeApi()
     await createTuiPlugin(f.api, OPT, {})
