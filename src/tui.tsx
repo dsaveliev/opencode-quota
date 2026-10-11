@@ -369,18 +369,25 @@ export async function createTuiPlugin(
   const tickTimer = setInterval(() => setTick((t) => t + 1), 10_000)
   const offIdle = api.event.on("session.idle", () => scheduleRefresh(false).catch(() => {}))
   const offErr = api.event.on("session.error", () => scheduleRefresh(true).catch(() => {}))
+  // Active-provider switch. Wipe the visible state (rows/error/freshness)
+  // so the panel doesn't keep showing the previous provider's data while
+  // the new fetch is in flight; then trigger a forced refresh.
+  function switchActiveProvider(next: QuotaProvider | null): void {
+    setActiveProvider(next)
+    setRows([])
+    setError(null)
+    setUpdatedAt(null)
+    setLastAttemptAt(null)
+    if (next) scheduleRefresh(true).catch(() => {})
+  }
   const offModelSwitched = api.event.on("session.next.model.switched", (e: any) => {
     const id = e?.properties?.model?.providerID as string | undefined
-    const next = resolve(id)
-    setActiveProvider(next)
-    if (next) scheduleRefresh(true).catch(() => {})
+    switchActiveProvider(resolve(id))
   })
   const offTuiSession = api.event.on("tui.session.select", (e: any) => {
     const id = e?.properties?.sessionID as string | undefined
     if (!id) return
-    const next = resolve(api.state?.session?.get(id)?.model?.providerID as string | undefined)
-    setActiveProvider(next)
-    if (next) scheduleRefresh(true).catch(() => {})
+    switchActiveProvider(resolve(api.state?.session?.get(id)?.model?.providerID as string | undefined))
   })
 
   // No UI surface enabled -> no register call at all (an empty slots object
