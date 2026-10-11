@@ -8,7 +8,7 @@ describe("resolveConfig", () => {
     expect(config.intervalMs).toBe(60000);
     expect(config.endpoint).toBeNull();
     expect(config.timeoutMs).toBe(8000);
-    expect(config.gaugeWidth).toBe(16);
+    expect(config.gaugeWidth).toBe(26);
     expect(config.panel).toBe(true);
     expect(config.chip).toBe(true);
     expect(config.maxHistory).toBe(120);
@@ -169,8 +169,8 @@ describe("resolveConfig", () => {
 
   test("non-string non-number option values are rejected instead of coerced", () => {
     const arr = resolveConfig({}, { gaugeWidth: ["12"] });
-    expect(arr.config.gaugeWidth).toBe(16);
-    expect(arr.warnings).toContain("invalid gaugeWidth, using 16");
+    expect(arr.config.gaugeWidth).toBe(26);
+    expect(arr.warnings).toContain("invalid gaugeWidth, using 26");
 
     const bool = resolveConfig({}, { intervalMs: true });
     expect(bool.config.intervalMs).toBe(60000);
@@ -232,11 +232,11 @@ describe("resolveConfig", () => {
 
   test("gaugeWidth NaN warns and keeps default without a clamp warning", () => {
     const viaOption = resolveConfig({}, { gaugeWidth: NaN });
-    expect(viaOption.config.gaugeWidth).toBe(16);
-    expect(viaOption.warnings).toEqual(["invalid gaugeWidth, using 16"]);
+    expect(viaOption.config.gaugeWidth).toBe(26);
+    expect(viaOption.warnings).toEqual(["invalid gaugeWidth, using 26"]);
 
     const viaEnv = resolveConfig({ ZAI_QUOTA_GAUGE_WIDTH: "not-a-number" });
-    expect(viaEnv.config.gaugeWidth).toBe(16);
+    expect(viaEnv.config.gaugeWidth).toBe(26);
     expect(viaEnv.warnings.some((w) => w.includes("gaugeWidth"))).toBe(true);
   });
 

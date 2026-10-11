@@ -26,7 +26,7 @@ export const DEFAULT_CONFIG: Readonly<QuotaConfig> = {
   intervalMs: 60000,
   endpoint: null,
   timeoutMs: 8000,
-  gaugeWidth: 16,
+  gaugeWidth: 26,
   panel: true,
   chip: true,
   maxHistory: 120,

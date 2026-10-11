@@ -14,22 +14,17 @@ const PARTIALS = ["", "▏", "▎", "▍", "▌", "▋", "▊", "▉"] as const;
 /**
  * Fixed panel geometry: every line targets exactly 38 columns.
  *   label   cols 0-2   (padEnd 3) + gap col 3
- *   bar     cols 4-19  (16 cells, GRID.barWidth)
- *   pct     cols 21-24 (padStart 4) + gap col 20
- *   usage   cols 26-34 (padStart 9) + gap col 25
+ *   bar     cols 4-29  (26 cells, GRID.barWidth)
+ *   pct     cols 31-34 (padStart 4) + gap col 30
  *   verdict cols 36-37 (padStart 2) + gap col 35
- * The gaps live as leading spaces on each field segment, so dropping the
- * usage segment removes its gap too (38 -> 28).
  */
 export const GRID = {
   width: 38,
   label: 0,
   bar: 4,
-  barWidth: 16,
-  pct: 21,
+  barWidth: 26,
+  pct: 31,
   pctWidth: 4,
-  usage: 26,
-  usageWidth: 9,
   verdict: 36,
   verdictWidth: 2,
   detail: { runway: 15 },
@@ -124,19 +119,15 @@ export function barCells(
 
 /**
  * Window line assembled onto the fixed GRID columns (38 wide at the default
- * bar width 16): label+gap prefix (one muted segment, cols 0-3), verdict-
- * colored 16-cell bar (unicode marker "|" drawn as its own text-colored
- * segment), padStart(4) percent, padStart(9) usage/limit pair, padStart(2)
- * verdict glyph. The usage pair is OMITTED (together with its gap) when it
- * exceeds GRID.usageWidth — the only width rung; percent and verdict are
- * never dropped (the grid holds them). `dropUsage` is the explicit
- * compatibility rung on top of the automatic >9 rule.
+ * bar width 26): label+gap prefix (one muted segment, cols 0-3), verdict-
+ * colored 26-cell bar (unicode marker "|" drawn as its own text-colored
+ * segment), padStart(4) percent, padStart(2) verdict glyph. Percent and
+ * verdict are never dropped (the grid holds them).
  */
 export function renderWindowLine(
   w: WindowModel,
   width: number,
   mode: GlyphMode,
-  opts: { dropUsage?: boolean } = {},
 ): Segment[] {
   const barRole = VERDICT_ROLE[w.verdict];
   const { cells, markerCell } = barCells(w.fillPercent, w.markerIndex, width, mode);
@@ -148,17 +139,12 @@ export function renderWindowLine(
         { text: cells.slice(markerCell! + 1), role: barRole },
       ]
     : [{ text: cells, role: barRole }];
-  const segs: Segment[] = [
+  return [
     { text: w.label.slice(0, 3).padEnd(3) + " ", role: "textMuted" },
     ...bar,
     { text: " " + w.percentText.padStart(GRID.pctWidth), role: "text" },
+    { text: " " + VERDICT_GLYPH[mode][w.verdict].padStart(GRID.verdictWidth), role: barRole },
   ];
-  const usagePair = `${w.usageText}/${w.limitText}`;
-  if (!opts.dropUsage && usagePair.length <= GRID.usageWidth) {
-    segs.push({ text: " " + usagePair.padStart(GRID.usageWidth), role: "textMuted" });
-  }
-  segs.push({ text: " " + VERDICT_GLYPH[mode][w.verdict].padStart(GRID.verdictWidth), role: barRole });
-  return segs;
 }
 
 /**
@@ -266,11 +252,7 @@ export function renderPanelLines(
   }
   const lines: Segment[][] = [header];
   for (const w of model.windows) {
-    let win = renderWindowLine(w, opts.gaugeWidth, opts.mode);
-    if (targetWidth < GRID.width && lineWidth(win) > targetWidth) {
-      win = renderWindowLine(w, opts.gaugeWidth, opts.mode, { dropUsage: true });
-    }
-    lines.push(win, renderDetailLine(w, opts.mode));
+    lines.push(renderWindowLine(w, opts.gaugeWidth, opts.mode), renderDetailLine(w, opts.mode));
   }
   return lines;
 }

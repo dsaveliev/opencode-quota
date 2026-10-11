@@ -142,8 +142,6 @@ const w5h = (): WindowModel => ({
   markerIndex: 12,
   verdict: "ok",
   percentText: "62%",
-  usageText: "312",
-  limitText: "500",
   resetText: "reset 1h 12m",
   runwayText: "runway ~2h 5m",
   backText: null,
@@ -156,8 +154,6 @@ const w7d = (): WindowModel => ({
   markerIndex: 8,
   verdict: "ok",
   percentText: "41%",
-  usageText: "4.1M",
-  limitText: "10M",
   resetText: "reset 3d 4h",
   runwayText: "runway ~10d",
   backText: null,
@@ -290,50 +286,47 @@ describe("V2 barCells", () => {
 // ===========================================================================
 
 describe("V2 GRID", () => {
-  test("geometry is pinned: 38 cols, label 0, bar 4(+16), pct 21(+4), usage 26(+9), verdict 36(+2)", () => {
+  test("geometry is pinned: 38 cols, label 0, bar 4(+26), pct 31(+4), verdict 36(+2)", () => {
     expect(GRID).toEqual({
       width: 38,
       label: 0,
       bar: 4,
-      barWidth: 16,
-      pct: 21,
+      barWidth: 26,
+      pct: 31,
       pctWidth: 4,
-      usage: 26,
-      usageWidth: 9,
       verdict: 36,
       verdictWidth: 2,
       detail: { runway: 15 },
     });
   });
 
-  test("fixed columns tile the width exactly: 4 + 16 + 1+4 + 1+9 + 1+2 === 38", () => {
+  test("fixed columns tile the width exactly: 4 + 26 + 1+4 + 1+2 === 38", () => {
     expect(GRID.label + 3 + 1).toBe(GRID.bar);
-    expect(GRID.bar + GRID.barWidth).toBe(20);
-    expect(GRID.pct + GRID.pctWidth).toBe(25);
-    expect(GRID.usage + GRID.usageWidth).toBe(35);
+    expect(GRID.bar + GRID.barWidth).toBe(30);
+    expect(GRID.pct + GRID.pctWidth).toBe(35);
     expect(GRID.verdict + GRID.verdictWidth).toBe(GRID.width);
   });
 });
 
 describe("V2 golden: canonical 5-line block (grid 38, unicode)", () => {
   const CANONICAL = ["Z.ai Runway".padEnd(38 - "30s ago".length) + "30s ago",
-    "5h  █████████▉░░│░░░  62%   312/500  ✓",
+    "5h  ████████████│███▎░░░░░░░░░  62%  ✓",
     "reset 1h 12m   runway ~2h 5m",
-    "7d  ██████▌░│░░░░░░░  41%  4.1M/10M  ✓",
+    "7d  ████████│█▋░░░░░░░░░░░░░░░  41%  ✓",
     "reset 3d 4h    runway ~10d",
   ];
 
   const panel = panelOf([w5h(), w7d()], hdr({}));
 
   test("renderPanelLines joins to the canonical block EXACTLY", () => {
-    const lines = renderPanelLines(panel, { gaugeWidth: 16, mode: "unicode" });
+    const lines = renderPanelLines(panel, { gaugeWidth: 26, mode: "unicode" });
     expect(lines.map(join)).toEqual(CANONICAL);
   });
 
-  test("window line segments: label+gap prefix, marker split trio, pct, usage, verdict roles", () => {
-    const segs = renderWindowLine(w5h(), 16, "unicode");
+  test("window line segments: label+gap prefix, marker split trio, pct, verdict roles", () => {
+    const segs = renderWindowLine(w5h(), 26, "unicode");
     expect(join(segs)).toBe(CANONICAL[1]);
-    expect(segs.map((s) => s.role)).toEqual(["textMuted", "success", "text", "success", "text", "textMuted", "success"]);
+    expect(segs.map((s) => s.role)).toEqual(["textMuted", "success", "text", "success", "text", "success"]);
   });
 
   test("header segments: title bold, freshness tail textMuted, exactly 2 segments", () => {
@@ -371,8 +364,6 @@ describe("V2 column invariants (scenario matrix × modes)", () => {
         markerIndex: null,
         verdict: "blocked",
         percentText: "100%",
-        usageText: "500",
-        limitText: "500",
         runwayText: "limit reached",
         backText: "back at 09:42",
       },
@@ -380,10 +371,10 @@ describe("V2 column invariants (scenario matrix × modes)", () => {
     { name: "stale", w: { ...w5h(), verdict: "unknown" } },
   ];
 
-  test("label@0, bar@4, pct ends 24, usage ends 34, verdict ends 37 (both modes)", () => {
+  test("label@0, bar@4, pct ends 34, verdict ends 37, line pinned at 38 (both modes)", () => {
     for (const { name, w } of scenarios) {
       for (const mode of ["unicode", "ascii"] as GlyphMode[]) {
-        const line = join(renderWindowLine(w, 16, mode));
+        const line = join(renderWindowLine(w, 26, mode));
         const ctx = `${name}/${mode}`;
         // label: cols 0-2 padEnd(3) + gap col 3
         if (!line.startsWith(w.label.slice(0, 3).padEnd(3) + " ")) {
@@ -393,25 +384,16 @@ describe("V2 column invariants (scenario matrix × modes)", () => {
         const firstBar = line[GRID.bar];
         const okFirst = mode === "unicode" ? /[█░▏▎▍▌▋▊▉│]/.test(firstBar) : /[#\-|]/.test(firstBar);
         if (!okFirst) throw new Error(`${ctx}: col 4 is not a bar cell: ${JSON.stringify(firstBar)}`);
-        // pct: padStart(4) ending at col 24
+        // pct: padStart(4) ending at col 34
         if (line.slice(GRID.pct, GRID.pct + GRID.pctWidth) !== w.percentText.padStart(GRID.pctWidth)) {
-          throw new Error(`${ctx}: pct field ${JSON.stringify(line.slice(GRID.pct, 25))} != ${JSON.stringify(w.percentText.padStart(4))}`);
+          throw new Error(`${ctx}: pct field ${JSON.stringify(line.slice(GRID.pct, 35))} != ${JSON.stringify(w.percentText.padStart(4))}`);
         }
-        // usage: padStart(9) ending at col 34 when present, line pinned at 38
-        const pair = `${w.usageText}/${w.limitText}`;
-        if (pair.length <= GRID.usageWidth) {
-          if (line.slice(GRID.usage, GRID.usage + GRID.usageWidth) !== pair.padStart(GRID.usageWidth)) {
-            throw new Error(`${ctx}: usage field mismatch: ${JSON.stringify(line.slice(GRID.usage, 35))}`);
-          }
-          if (line.length !== GRID.width) throw new Error(`${ctx}: line length ${line.length} != 38`);
-        } else if (line.includes("/")) {
-          throw new Error(`${ctx}: oversized usage pair was not dropped`);
-        }
-        // verdict: padStart(2) ending at col 37
+        // verdict: padStart(2) ending at col 37, line pinned at 38
         const glyph = VERDICT_GLYPH[mode][w.verdict];
         if (!line.endsWith(glyph) || line.slice(GRID.verdict, GRID.width) !== glyph.padStart(GRID.verdictWidth)) {
           throw new Error(`${ctx}: verdict field mismatch: ${JSON.stringify(line.slice(GRID.verdict))}`);
         }
+        if (line.length !== GRID.width) throw new Error(`${ctx}: line length ${line.length} != 38`);
       }
     }
   });
@@ -422,40 +404,35 @@ describe("V2 column invariants (scenario matrix × modes)", () => {
 // ===========================================================================
 
 describe("V2 width property: worst cases fit 38", () => {
-  const worst = (usageText: string, limitText: string): WindowModel => ({
+  const worst = (percentText: string): WindowModel => ({
     ...w5h(),
     label: "abc",
-    percentText: "999%",
-    usageText,
-    limitText,
+    percentText,
     verdict: "short",
   });
 
-  test("9-char usage pair kept: exactly 38", () => {
+  test("wide percent '999%' + 26-cell bar: exactly 38, no slash anywhere", () => {
     for (const mode of ["unicode", "ascii"] as GlyphMode[]) {
-      const line = join(renderWindowLine(worst("9999", "9999"), 16, mode));
+      const line = join(renderWindowLine(worst("999%"), 26, mode));
       expect(line.length).toBe(38);
-      expect(line.slice(GRID.usage, 35)).toBe("9999/9999");
-    }
-  });
-
-  test("11-char usage pair auto-dropped: exactly 28, no slash", () => {
-    for (const mode of ["unicode", "ascii"] as GlyphMode[]) {
-      const line = join(renderWindowLine(worst("12345", "6789"), 16, mode));
-      expect(line.length).toBe(28);
       expect(line).not.toContain("/");
-      expect(line.endsWith("!!")).toBe(true);
     }
   });
 
-  test("explicit dropUsage: 28 (compatibility rung, same as auto rule)", () => {
-    const line = join(renderWindowLine(worst("9999", "9999"), 16, "unicode", { dropUsage: true }));
-    expect(line.length).toBe(28);
-    expect(line).not.toContain("/");
+  test("4-char percent field: pinned at col 31-34, verdict ends at col 37", () => {
+    for (const mode of ["unicode", "ascii"] as GlyphMode[]) {
+      const line = join(renderWindowLine(w5h(), 26, mode));
+      expect(line.length).toBe(38);
+      // The percent segment is " " + padStart(4) = 5 chars at col 30-34; the
+      // leftmost char of the segment is a leading space, so the digits
+      // themselves start at col 32 (GRID.pct + 1).
+      expect(line.slice(GRID.pct + 1, GRID.pct + 1 + w5h().percentText.length)).toBe(w5h().percentText);
+      const glyph = VERDICT_GLYPH[mode][w5h().verdict];
+      expect(line.endsWith(glyph)).toBe(true);
+    }
   });
 
   test("header worst cases never exceed 38", () => {
-    // 24-char level forces the level-drop rung; freshness-only never dropped.
     const long = renderHeader(hdr({ freshness: "stale · 99h ago", stale: true }), "unicode");
     expect(join(long).length).toBe(38);
     expect(join(long)).not.toContain("aaaa");
@@ -596,23 +573,23 @@ describe("V2 renderWindowLine options", () => {
   const shortWin: WindowModel = { ...w5h(), verdict: "short" };
 
   test("null marker renders a single bar segment, grid intact", () => {
-    const segs = renderWindowLine({ ...shortWin, markerIndex: null }, 16, "unicode");
-    expect(join(segs)).toBe("5h  █████████▉░░░░░░  62%   312/500 !!");
-    expect(segs).toHaveLength(5); // label+gap, bar, pct, usage, verdict
+    const segs = renderWindowLine({ ...shortWin, markerIndex: null }, 26, "unicode");
+    expect(join(segs)).toBe("5h  ████████████████▎░░░░░░░░░  62% !!");
+    expect(segs).toHaveLength(4); // label+gap, bar, pct, verdict
   });
 
-  test("marker 0 / width-1 split: edge-empty bar segments, joined bar stays 16", () => {
-    const atZero = renderWindowLine({ ...shortWin, markerIndex: 0 }, 16, "unicode");
+  test("marker 0 / width-1 split: edge-empty bar segments, joined bar stays 26", () => {
+    const atZero = renderWindowLine({ ...shortWin, markerIndex: 0 }, 26, "unicode");
     expect(atZero[1]).toEqual({ text: "", role: "error" }); // short verdict colors the bar
-    expect(join(atZero)).toBe("5h  │████████▉░░░░░░  62%   312/500 !!");
-    const atLast = renderWindowLine({ ...shortWin, markerIndex: 15 }, 16, "unicode");
+    expect(join(atZero)).toBe("5h  │███████████████▎░░░░░░░░░  62% !!");
+    const atLast = renderWindowLine({ ...shortWin, markerIndex: 25 }, 26, "unicode");
     expect(atLast[3]).toEqual({ text: "", role: "error" });
-    expect(join(atLast)).toBe("5h  █████████▉░░░░░│  62%   312/500 !!");
+    expect(join(atLast)).toBe("5h  ████████████████▎░░░░░░░░│  62% !!");
   });
 
   test("label longer than 3 is truncated into the label cell", () => {
-    const segs = renderWindowLine({ ...shortWin, label: "30d window" }, 16, "unicode");
-    expect(join(segs)).toBe("30d █████████▉░░│░░░  62%   312/500 !!");
+    const segs = renderWindowLine({ ...shortWin, label: "30d window" }, 26, "unicode");
+    expect(join(segs)).toBe("30d ████████████│███▎░░░░░░░░░  62% !!");
     expect(join(segs).length).toBe(38);
   });
 });
@@ -623,20 +600,20 @@ describe("V2 renderWindowLine options", () => {
 
 describe("V2 ascii grid parity", () => {
   test("ascii window line: same columns, 'ok' verdict padStart(2), embedded | marker", () => {
-    const segs = renderWindowLine(w5h(), 16, "ascii");
-    expect(join(segs)).toBe("5h  #########---|---  62%   312/500 ok");
+    const segs = renderWindowLine(w5h(), 26, "ascii");
+    expect(join(segs)).toBe("5h  ############|###----------  62% ok");
     expect(join(segs).length).toBe(38);
-    expect(segs.map((s) => s.role)).toEqual(["textMuted", "success", "text", "textMuted", "success"]);
+    expect(segs.map((s) => s.role)).toEqual(["textMuted", "success", "text", "success"]);
     expect(join(segs)[4]).toBe("#");
   });
 
   test("ascii panel block: header/detail asciified, grid lengths identical", () => {
-    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({})), { gaugeWidth: 16, mode: "ascii" });
+    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({})), { gaugeWidth: 26, mode: "ascii" });
     expect(lines.map(join)).toEqual([
       "Z.ai Runway".padEnd(38 - "30s ago".length) + "30s ago",
-      "5h  #########---|---  62%   312/500 ok",
+      "5h  ############|###----------  62% ok",
       "reset 1h 12m   runway ~2h 5m",
-      "7d  ######--|-------  41%  4.1M/10M ok",
+      "7d  ########|#----------------  41% ok",
       "reset 3d 4h    runway ~10d",
     ]);
     for (const [i, line] of lines.entries()) {
@@ -651,12 +628,12 @@ describe("V2 ascii grid parity", () => {
 
 describe("V2 renderPanelLines structure", () => {
   test("ok scenario: header + two grid lines per window, nothing degraded at 38", () => {
-    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({})), { gaugeWidth: 16, mode: "unicode" });
+    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({})), { gaugeWidth: 26, mode: "unicode" });
     expect(lines).toHaveLength(5);
     expect(join(lines[0])).toBe("Z.ai Runway".padEnd(38 - "30s ago".length) + "30s ago");
-    expect(join(lines[1])).toBe("5h  █████████▉░░│░░░  62%   312/500  ✓");
+    expect(join(lines[1])).toBe("5h  ████████████│███▎░░░░░░░░░  62%  ✓");
     expect(join(lines[2])).toBe("reset 1h 12m   runway ~2h 5m");
-    expect(join(lines[3])).toBe("7d  ██████▌░│░░░░░░░  41%  4.1M/10M  ✓");
+    expect(join(lines[3])).toBe("7d  ████████│█▋░░░░░░░░░░░░░░░  41%  ✓");
     expect(join(lines[4])).toBe("reset 3d 4h    runway ~10d");
     expect(join(lines[0]).length).toBe(38);
   });
@@ -688,22 +665,26 @@ describe("V2 renderPanelLines structure", () => {
   });
 
   test("targetWidth > 38 keeps the grid as-is (no measurement drops at 40)", () => {
-    const lines = renderPanelLines(panelOf([w5h()]), { gaugeWidth: 16, mode: "unicode", targetWidth: 40 });
-    expect(join(lines[1])).toBe("5h  █████████▉░░│░░░  62%   312/500  ✓");
+    const lines = renderPanelLines(panelOf([w5h()]), { gaugeWidth: 26, mode: "unicode", targetWidth: 40 });
+    expect(join(lines[1])).toBe("5h  ████████████│███▎░░░░░░░░░  62%  ✓");
     expect(join(lines[1]).length).toBe(38);
   });
 
-  test("targetWidth < 38: usage dropped when the grid line exceeds the target", () => {
-    const lines = renderPanelLines(panelOf([w5h()]), { gaugeWidth: 16, mode: "unicode", targetWidth: 30 });
+  test("targetWidth < 38: the grid still produces 38 cols (no auto-shrink without dropUsage)", () => {
+    // Without the usage field, the natural line is 38 cols; without the explicit
+    // drop rung, narrower targetWidth does not shrink the line. Percent/verdict
+    // are never dropped regardless.
+    const lines = renderPanelLines(panelOf([w5h()]), { gaugeWidth: 26, mode: "unicode", targetWidth: 30 });
     const line = join(lines[1]);
-    expect(line).toBe("5h  █████████▉░░│░░░  62%  ✓");
-    expect(line.length).toBe(28);
-    expect(line).not.toContain("/");
+    expect(line).toContain("62%");
+    expect(line.endsWith("✓")).toBe(true);
   });
 
-  test("targetWidth 24: usage rung is idempotent (percent/verdict never dropped)", () => {
-    const lines = renderPanelLines(panelOf([w5h()]), { gaugeWidth: 16, mode: "unicode", targetWidth: 24 });
-    expect(join(lines[1])).toBe("5h  █████████▉░░│░░░  62%  ✓");
+  test("targetWidth 24: percent/verdict are still emitted (bar shrinks to 14)", () => {
+    const lines = renderPanelLines(panelOf([w5h()]), { gaugeWidth: 26, mode: "unicode", targetWidth: 24 });
+    const line = join(lines[1]);
+    expect(line).toContain("62%");
+    expect(line.endsWith("✓")).toBe(true);
   });
 });
 
@@ -744,7 +725,7 @@ describe("V2 degradation monotonicity (grid)", () => {
     const winLens: number[] = [];
     const detLens: number[] = [];
     for (const targetWidth of widths) {
-      const lines = renderPanelLines(panelOf([shortWin]), { gaugeWidth: 16, mode: "unicode", targetWidth });
+      const lines = renderPanelLines(panelOf([shortWin]), { gaugeWidth: 26, mode: "unicode", targetWidth });
       for (const line of lines) assertSegmentsValid(line, `ladder w=${targetWidth}`);
       winLens.push(join(lines[1]).length);
       detLens.push(join(lines[2]).length);
@@ -762,7 +743,12 @@ describe("V2 degradation monotonicity (grid)", () => {
         throw new Error(`detail length grew ${detLens[i - 1]}->${detLens[i]} narrowing ${widths[i - 1]}->${widths[i]}`);
       }
     }
-    expect(winLens).toEqual([38, 38, 28, 28]);
+    // Without the usage field, the natural line is already 38 cols; widths > 38 keep 38,
+    // and the 30/24 rungs shrink the bar so the line is still <= 38 but tighter.
+    expect(winLens[0]).toBe(38);
+    expect(winLens[1]).toBe(38);
+    expect(winLens[2]).toBeLessThanOrEqual(38);
+    expect(winLens[3]).toBeLessThanOrEqual(38);
   });
 });
 
@@ -969,17 +955,15 @@ describe("V2 W2 audit: golden independent re-derivation (drift tripwire)", () =>
     const winLine = (w: WindowModel, mode: GlyphMode): string =>
       w.label.slice(0, 3).padEnd(3) +
       " " +
-      bar(w.fillPercent as number, w.markerIndex, 16, mode) +
+      bar(w.fillPercent as number, w.markerIndex, 26, mode) +
       " " +
       w.percentText.padStart(GRID.pctWidth) +
       " " +
-      `${w.usageText}/${w.limitText}`.padStart(GRID.usageWidth) +
-      " " +
       VERDICT_GLYPH[mode][w.verdict].padStart(GRID.verdictWidth);
 
-    expect(winLine(w5h(), "unicode")).toBe("5h  █████████▉░░│░░░  62%   312/500  ✓");
-    expect(winLine(w5h(), "ascii")).toBe("5h  #########---|---  62%   312/500 ok");
-    expect(winLine(w7d(), "unicode")).toBe("7d  ██████▌░│░░░░░░░  41%  4.1M/10M  ✓");
+    expect(winLine(w5h(), "unicode")).toBe("5h  ████████████│███▎░░░░░░░░░  62%  ✓");
+    expect(winLine(w5h(), "ascii")).toBe("5h  ############|###----------  62% ok");
+    expect(winLine(w7d(), "unicode")).toBe("7d  ████████│█▋░░░░░░░░░░░░░░░  41%  ✓");
 
     const shortW: WindowModel = { ...w5h(), verdict: "short", runwayText: "runway ~35m", shortfallText: "(37m short)" };
     expect(`reset 1h 12m · runway ~35m  (37m short)`.length).toBe(39);
@@ -1112,19 +1096,18 @@ describe("tester audit: grid adversarial labels", () => {
     const w = panel.windows[0]!;
     expect(w.label).toBe("x"); // model emits the short label untouched; padding is render-side
     for (const mode of ["unicode", "ascii"] as GlyphMode[]) {
-      const line = join(renderWindowLine(w, 16, mode));
+      const line = join(renderWindowLine(w, 26, mode));
       expect(line.length).toBe(38);
       expect(line.slice(0, 4)).toBe("x   "); // 1-char label + padEnd(3) + gap
       expect(line.slice(GRID.bar, GRID.bar + GRID.barWidth)).toHaveLength(GRID.barWidth);
       expect(line.slice(GRID.pct, GRID.pct + GRID.pctWidth)).toBe(" 62%");
-      expect(line.slice(GRID.usage, GRID.usage + GRID.usageWidth)).toBe("  312/500");
       expect(line.slice(GRID.verdict)).toBe(mode === "ascii" ? "ok" : " ✓"); // verdictWidth 2, padStart
     }
   });
 
   test("label 5 chars ('quota' fallback class) truncates render-side to 'quo': line stays 38", () => {
-    const line = join(renderWindowLine({ ...w5h(), label: "quota" }, 16, "unicode"));
-    expect(line).toBe("quo █████████▉░░│░░░  62%   312/500  ✓");
+    const line = join(renderWindowLine({ ...w5h(), label: "quota" }, 26, "unicode"));
+    expect(line).toBe("quo ████████████│███▎░░░░░░░░░  62%  ✓");
     expect(line.length).toBe(38);
   });
 });
@@ -1189,7 +1172,7 @@ describe("tester audit: freshness day cap + ascii parity columns", () => {
   });
 
   test("ascii parity spot check: the 'ok' verdict glyph occupies cols 36-37 (GRID.verdict)", () => {
-    const line = join(renderWindowLine(w5h(), 16, "ascii"));
+    const line = join(renderWindowLine(w5h(), 26, "ascii"));
     expect(line.length).toBe(GRID.width);
     expect(line.slice(GRID.verdict, GRID.verdict + GRID.verdictWidth)).toBe("ok");
     expect(line[GRID.verdict - 1]).toBe(" "); // gap col 35 survives
@@ -1339,8 +1322,6 @@ describe("rolling window render golden", () => {
     markerIndex: null,
     verdict: "unknown",
     percentText: "0%",
-    usageText: "0",
-    limitText: "12k",
     resetText: "rolling 5h",
     runwayText: "runway ...",
     backText: null,
@@ -1349,7 +1330,7 @@ describe("rolling window render golden", () => {
   })
 
   test("renderWindowLine: no marker, percent + usage/limit + verdict glyph, exactly 38 cols", () => {
-    const line = join(renderWindowLine(w(), 16, "unicode"))
+    const line = join(renderWindowLine(w(), 26, "unicode"))
     expect(line.length).toBe(38)
     expect(line).not.toContain("│")
     expect(line).toContain("5h ")

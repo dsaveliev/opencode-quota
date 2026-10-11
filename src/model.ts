@@ -4,7 +4,7 @@
  * including `now` and the time formatter, is injected via ModelInput.
  */
 import type { QuotaRow } from "./api";
-import { fmtApproxDuration, fmtBackAt, fmtCount, fmtDuration, sanitize } from "./format";
+import { fmtApproxDuration, fmtBackAt, fmtDuration, sanitize } from "./format";
 import { elapsedMs, markerIndex } from "./marker";
 import type { RunwayResult } from "./runway";
 import { classifyWindow, worstVerdict } from "./status";
@@ -33,8 +33,6 @@ export type WindowModel = {
   markerIndex: number | null;
   verdict: Verdict;
   percentText: string;
-  usageText: string;
-  limitText: string;
   resetText: string;
   runwayText: string;
   /** blocked windows only. */
@@ -190,8 +188,6 @@ function buildWindow(
     markerIndex: markerIdx,
     verdict,
     percentText: pctText(row.percent),
-    usageText: row.usage != null ? fmtCount(row.usage) : "?",
-    limitText: row.limit != null ? fmtCount(row.limit) : "?",
     resetText: isRolling
       ? `rolling ${labelForReset}`
       : resetIn != null

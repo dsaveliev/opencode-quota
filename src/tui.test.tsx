@@ -287,8 +287,7 @@ describe("createTuiPlugin wiring", () => {
     expect(frame).toContain("7d")
     expect(frame).toContain("\u2588") // filled gauge cell
     expect(frame).toContain("80%")
-    expect(frame).toContain(" 400/500") // single-space separator (no glued "80%400")
-    expect(frame).not.toContain("80%400")
+    expect(frame).not.toContain("400/500") // usage counter removed
     expect(frame).toContain("reset")
   })
 
@@ -753,11 +752,11 @@ describe("wiring race and boundary audit", () => {
       const chip = await renderSlot(f.slots[0].slots.session_prompt_right)
       expect(chip.captureCharFrame()).toContain(" zai ?\u00b7")
 
-      // panel: 5h row has no limit -> "runway …" and "?/?" usage text
+      // panel: 5h row has no limit -> "runway …" and "?" percent text
       const panel = await renderSlot(f.slots[0].slots.sidebar_content)
       const frame = panel.captureCharFrame()
       expect(frame).toContain("runway \u2026")
-      expect(frame).toContain("?/?")
+      expect(frame).toContain("  ?") // percent "?" (3 leading spaces) — usage counter no longer rendered
 
       // second refresh 2s later: the valid row gains a projection from two
       // samples while the null-usage row stays inert (no samples, no crash)
@@ -1111,8 +1110,7 @@ describe("V2 slot surfaces (W3)", () => {
       expect(frame).toContain("\u2502") // reset marker as its own segment
       expect(frame).toContain("62%") // rounded percent (62.4)
       expect(frame).toContain(" 62%") // single-space separator before percent
-      expect(frame).not.toContain("62%312") // no glued percent+usage
-      expect(frame).toContain("312/500") // usage/limit texts
+      expect(frame).not.toContain("312/500") // usage counter removed
       expect(frame).toContain("reset 1h 10m") // 5h detail line (detail: always)
       expect(frame).toContain("runway ~3h 8m") // 188-minute projection
       expect(frame.match(/reset/g)?.length).toBe(2) // both windows keep details
