@@ -40,9 +40,8 @@ describe("minimax provider", () => {
   });
 
   test("parse: live payload inverts remaining_percent and emits pseudo-usage rows", () => {
-    const { rows, level } = minimaxProvider.parse(livePayload);
-    expect(level).toBeNull();
-    expect(rows).toHaveLength(2);
+    const { rows } = minimaxProvider.parse(livePayload);
+        expect(rows).toHaveLength(2);
     expect(rows[0]).toEqual({
       label: "5h",
       usage: 9,
@@ -62,10 +61,9 @@ describe("minimax provider", () => {
   });
 
   test("parse: empty model_remains returns no rows (designed empty state)", () => {
-    const { rows, level } = minimaxProvider.parse({ model_remains: [], base_resp: { status_code: 0 } });
+    const { rows } = minimaxProvider.parse({ model_remains: [], base_resp: { status_code: 0 } });
     expect(rows).toHaveLength(0);
-    expect(level).toBeNull();
-  });
+      });
 
   test("parse: status != 1 drops the row (provider is the source of truth for 'in plan')", () => {
     const blocked = {

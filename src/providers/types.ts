@@ -1,12 +1,11 @@
 import type { QuotaRow } from "../api";
 
 /**
- * ParsedQuota: the data shape the parser produces. The level string is
- * the provider's display label for the subscription tier (e.g. "Pro",
- * "Lite"). `null` when the payload does not supply one (MiniMax
- * does not).
+ * ParsedQuota: the data shape the parser produces — just the per-window
+ * rows. Subscription-tier labels are not surfaced: the header shows only
+ * `<Provider Name> Runway` followed by the freshness timer.
  */
-export type ParsedQuota = { rows: QuotaRow[]; level: string | null };
+export type ParsedQuota = { rows: QuotaRow[] };
 
 /**
  * A registered quota provider. The active OpenCode session's

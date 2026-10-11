@@ -44,7 +44,7 @@ export type WindowModel = {
 };
 
 export type PanelModel = {
-  header: { title: string; level: string | null; freshness: string; stale: boolean; updating: boolean };
+  header: { title: string; freshness: string; stale: boolean; updating: boolean };
   /** Error taxonomy code; null when cached rows are shown (stale presentation). */
   error: string | null;
   windows: WindowModel[];
@@ -66,7 +66,6 @@ export type ModelInput = {
    * another when the user switches providers mid-session.
    */
   runways: Record<string, { result: RunwayResult; spanMs: number | null }>;
-  level: string | null;
   /** Last successful refresh. */
   updatedAt: number | null;
   /** Last attempt (success or not) — freshness source in error state. */
@@ -225,8 +224,6 @@ export function buildPanel(input: ModelInput): PanelModel {
   return {
     header: {
       title,
-      // Server-controlled; sanitized here so every V2 consumer inherits. null stays null.
-      level: input.level == null ? null : capitalize(sanitize(input.level)),
       freshness: freshnessText(ts, input.now, stale),
       stale,
       updating: input.updating,

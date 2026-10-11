@@ -35,7 +35,6 @@ function makeInput(overrides: Partial<ModelInput> = {}): ModelInput {
   return {
     rows: [],
     runways: {},
-    level: null,
     updatedAt: null,
     lastAttemptAt: null,
     error: null,
@@ -65,14 +64,12 @@ describe("buildPanel", () => {
     const input = makeInput({
       rows: [row5h(), row7d()],
       runways: okRunways(),
-      level: "Max",
       updatedAt: NOW - 30_000,
     });
 
     expect(buildPanel(input)).toEqual({
       header: {
         title: "Z.ai Runway",
-        level: "Max",
         freshness: "30s ago",
         stale: false,
         updating: false,
@@ -462,7 +459,6 @@ describe("W1 audit: input immutability", () => {
       makeInput({
         rows: [row5h(), row7d()],
         runways: okRunways(),
-        level: "Max",
         updatedAt: NOW - 30_000,
         lastAttemptAt: NOW - 30_000,
         error: "http-429",
@@ -684,7 +680,6 @@ function rePanel(input: ModelInput): PanelModel {
   return {
     header: {
       title: "Z.ai Runway" as const,
-      level: input.level == null ? null : input.level[0].toUpperCase() + input.level.slice(1),
       freshness: reFreshness(ts, input.now, stale),
       stale,
       updating: input.updating,
@@ -717,7 +712,7 @@ function reChip(input: ModelInput): ChipModel {
 
 describe("W1 audit: golden integrity (independent recomputation)", () => {
   const okInput = () =>
-    makeInput({ rows: [row5h(), row7d()], runways: okRunways(), level: "Max", updatedAt: NOW - 30_000 });
+    makeInput({ rows: [row5h(), row7d()], runways: okRunways(), updatedAt: NOW - 30_000 });
 
   test("golden 1 markers: floor+clamp arithmetic reproduces the frozen 12 and 8", () => {
     // 5h: elapsed = 18_000_000 - 4_320_000 = 13_680_000 -> floor(0.76 * 16) = 12
@@ -733,7 +728,7 @@ describe("W1 audit: golden integrity (independent recomputation)", () => {
 
   test("golden 1 (ok scenario): recomputation agrees with the frozen golden literal", () => {
     expect(rePanel(okInput())).toEqual({
-      header: { title: "Z.ai Runway", level: "Max", freshness: "30s ago", stale: false, updating: false },
+      header: { title: "Z.ai Runway", freshness: "30s ago", stale: false, updating: false },
       error: null,
       windows: [
         {
@@ -901,10 +896,11 @@ describe("review fix A2-1: V2 emission paths sanitized at construction", () => {
     expect(panel.windows[0]?.label).toBe("evil");
   });
 
-  test("header level with OSC title escape: whole sequence stripped (payload is terminal command, not text); null stays null", () => {
-    const withOsc = buildPanel(makeInput({ level: "\u001b]0;pwn\u0007", rows: [row5h()], runways: okRunways() }));
-    expect(withOsc.header.level).toBe("");
-    expect(buildPanel(makeInput({ level: null })).header.level).toBeNull();
+  test("header title defaults to 'Z.ai Runway' and reflects an explicit title override", () => {
+    const p = buildPanel(makeInput({ rows: [row5h()], runways: okRunways() }));
+    expect(p.header.title).toBe("Z.ai Runway");
+    const custom = buildPanel(makeInput({ title: "Custom Runway", rows: [row5h()], runways: okRunways() }));
+    expect(custom.header.title).toBe("Custom Runway");
   });
 
   test("hostile raw label still resolves its runway record (lookup keyed by RAW label, display sanitized)", () => {
@@ -968,14 +964,8 @@ describe("quick-fixes: title and level capitalization (RED)", () => {
     const p = buildPanel(makeInput({ rows: [row5h()], runways: okRunways() }))
     expect(p.header.title).toBe("Z.ai Runway")
   })
-  test("level is capitalized after sanitization", () => {
-    const p = buildPanel(makeInput({ rows: [row5h()], runways: okRunways(), level: "max plan" }))
-    expect(p.header.level).toBe("Max plan")
-    const already = buildPanel(makeInput({ rows: [row5h()], runways: okRunways(), level: "Lite" }))
-    expect(already.header.level).toBe("Lite")
-    const none = buildPanel(makeInput({ rows: [row5h()], runways: okRunways(), level: null }))
-    expect(none.header.level).toBeNull()
-    const hostile = buildPanel(makeInput({ rows: [row5h()], runways: okRunways(), level: "\u001b]0;x\u0007max" }))
-    expect(hostile.header.level).toBe("Max")
+  test("title is capitalized after sanitization", () => {
+    const p = buildPanel(makeInput({ rows: [row5h()], runways: okRunways()}))
+    expect(p.header.title).toBe("Z.ai Runway")
   })
 })

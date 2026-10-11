@@ -83,7 +83,6 @@ export async function createTuiPlugin(
   // staleness marker while in an error state, where updatedAt (last success)
   // would either lag behind fresh attempts or never be set at all.
   const [lastAttemptAt, setLastAttemptAt] = createSignal<number | null>(null)
-  const [level, setLevel] = createSignal<string | null>(null)
   // True while a fetch is actually in flight (set when it starts, cleared in
   // the finally) — skipped/joined scheduleRefresh calls never flip it.
   const [updating, setUpdating] = createSignal(false)
@@ -145,7 +144,6 @@ export async function createTuiPlugin(
       const parsed = provider.parse(result.payload)
       const now = Date.now()
       setRows(parsed.rows)
-      setLevel(parsed.level)
       setUpdatedAt(now)
       setError(parsed.rows.length === 0 ? "empty" : null)
       dropHistoryForProviderSwitch(provider.id)
@@ -245,7 +243,6 @@ export async function createTuiPlugin(
       providerId: provider?.id ?? "",
       rows: currentRows,
       runways,
-      level: level(),
       updatedAt: updatedAt(),
       lastAttemptAt: lastAttemptAt(),
       error: error(),

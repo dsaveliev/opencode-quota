@@ -6,7 +6,6 @@ const W7D = 7 * 24 * 60 * 60 * 1000;
 
 const happy = {
   data: {
-    level: "Lite",
     limits: [
       {
         type: "a",
@@ -32,8 +31,7 @@ describe("zhipu provider", () => {
   });
 
   test("parse: limits[] with unit 3/6 maps to windowMs and the expected fields", () => {
-    const { rows, level } = zhipuProvider.parse(happy);
-    expect(level).toBe("Lite");
+    const { rows } = zhipuProvider.parse(happy);
     expect(rows).toHaveLength(2);
     expect(rows[0]).toEqual({
       label: "5h",

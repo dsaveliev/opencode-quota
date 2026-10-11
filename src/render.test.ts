@@ -80,7 +80,6 @@ function makeInput(overrides: Partial<ModelInput> = {}): ModelInput {
   return {
     rows: [],
     runways: {},
-    level: null,
     updatedAt: null,
     lastAttemptAt: null,
     error: null,
@@ -111,7 +110,7 @@ function build(name: string, input: ModelInput): { name: string; panel: V2PanelM
 /** Scenario matrix mirroring model.test.ts goldens, rebuilt inline (no cross-test imports). */
 function v2Scenarios(): { name: string; panel: V2PanelModel; chip: ChipModel }[] {
   return [
-    build("ok", makeInput({ rows: [v2Row5h(), v2Row7d()], runways: v2OkRunways(), level: "max", updatedAt: V2_NOW - 30_000 })),
+    build("ok", makeInput({ rows: [v2Row5h(), v2Row7d()], runways: v2OkRunways(), updatedAt: V2_NOW - 30_000 })),
     build(
       "tight",
       makeInput({ rows: [v2Row5h(), v2Row7d()], runways: { ...v2OkRunways(), [k("5h")]: makeRunway("ok", 5_400_000, 72 * V2_MIN) }, updatedAt: V2_NOW - 30_000 }),
@@ -167,7 +166,6 @@ const w7d = (): WindowModel => ({
 
 const hdr = (over: Partial<V2PanelModel["header"]> = {}): V2PanelModel["header"] => ({
   title: "Z.ai Runway",
-  level: null,
   freshness: "30s ago",
   stale: false,
   updating: false,
@@ -318,14 +316,14 @@ describe("V2 GRID", () => {
 });
 
 describe("V2 golden: canonical 5-line block (grid 38, unicode)", () => {
-  const CANONICAL = ["Z.ai Runway · Lite" + " ".repeat(38 - 7 - 18) + "30s ago",
+  const CANONICAL = ["Z.ai Runway".padEnd(38 - "30s ago".length) + "30s ago",
     "5h  █████████▉░░│░░░  62%   312/500  ✓",
     "reset 1h 12m   runway ~2h 5m",
     "7d  ██████▌░│░░░░░░░  41%  4.1M/10M  ✓",
     "reset 3d 4h    runway ~10d",
   ];
 
-  const panel = panelOf([w5h(), w7d()], hdr({ level: "Lite" }));
+  const panel = panelOf([w5h(), w7d()], hdr({}));
 
   test("renderPanelLines joins to the canonical block EXACTLY", () => {
     const lines = renderPanelLines(panel, { gaugeWidth: 16, mode: "unicode" });
@@ -338,13 +336,12 @@ describe("V2 golden: canonical 5-line block (grid 38, unicode)", () => {
     expect(segs.map((s) => s.role)).toEqual(["textMuted", "success", "text", "success", "text", "textMuted", "success"]);
   });
 
-  test("header segments: title/sep/level all text+bold, freshness tail textMuted", () => {
-    const segs = renderHeader(hdr({ level: "Lite" }), "unicode");
-    expect(segs).toHaveLength(4);
+  test("header segments: title bold, freshness tail textMuted, exactly 2 segments", () => {
+    const segs = renderHeader(hdr({}), "unicode");
+    expect(segs).toHaveLength(2);
     expect(segs[0]).toEqual({ text: "Z.ai Runway", role: "text", bold: true });
-    expect(segs[1]).toEqual({ text: " · ", role: "text", bold: true });
-    expect(segs[2]).toEqual({ text: "Lite", role: "text", bold: true });
-    expect(segs[3].text.endsWith("30s ago")).toBe(true);
+    expect(segs[1].text.endsWith("30s ago")).toBe(true);
+    expect(segs[1].role).toBe("textMuted");
   });
 
   test("detail segments: reset (textMuted) + ' · ' + runway (verdict role)", () => {
@@ -459,10 +456,10 @@ describe("V2 width property: worst cases fit 38", () => {
 
   test("header worst cases never exceed 38", () => {
     // 24-char level forces the level-drop rung; freshness-only never dropped.
-    const long = renderHeader(hdr({ level: "a".repeat(24), freshness: "stale · 99h ago", stale: true }), "unicode");
+    const long = renderHeader(hdr({ freshness: "stale · 99h ago", stale: true }), "unicode");
     expect(join(long).length).toBe(38);
     expect(join(long)).not.toContain("aaaa");
-    const updating = renderHeader(hdr({ level: "a".repeat(24), updating: true }), "unicode");
+    const updating = renderHeader(hdr({ updating: true }), "unicode");
     expect(join(updating).length).toBe(38);
     expect(join(updating)).not.toContain("aaaa");
   });
@@ -484,30 +481,17 @@ describe("V2 width property: worst cases fit 38", () => {
 // ===========================================================================
 
 describe("V2 renderHeader variants", () => {
-  test("null level: title padEnd + freshness right-flush to col 37", () => {
+  test("default: title + freshness right-flush, exactly 38 cols, 2 segments", () => {
     const segs = renderHeader(hdr(), "unicode");
+    expect(segs).toHaveLength(2);
     expect(join(segs)).toBe("Z.ai Runway".padEnd(38 - "30s ago".length) + "30s ago");
     expect(join(segs).length).toBe(38);
     expect(join(segs).endsWith("30s ago")).toBe(true);
     expect(segs.map((s) => s.role)).toEqual(["text", "textMuted"]);
   });
 
-  test("level present: '· plan: Lite' cluster, ends at col 37", () => {
-    const segs = renderHeader(hdr({ level: "Lite" }), "unicode");
-    const left = "Z.ai Runway · Lite";
-    expect(join(segs)).toBe(left + " ".repeat(38 - 7 - left.length) + "30s ago");
-    expect(join(segs).length).toBe(38);
-  });
-
-  test("ladder rung 1: 24-char level + 'stale · 99h ago' drops the level, keeps stale freshness", () => {
-    const segs = renderHeader(hdr({ level: "a".repeat(24), freshness: "stale · 99h ago", stale: true }), "unicode");
-    expect(join(segs)).toBe("Z.ai Runway".padEnd(38 - "stale · 99h ago".length) + "stale · 99h ago");
-    expect(join(segs).length).toBe(38);
-    expect(segs[1].role).toBe("warning");
-  });
-
-  test("ladder rung 2: freshness-only still too long drops the leading 'stale · ' (age kept, title kept)", () => {
-    // 8 + 31 = 39-char freshness alone: 10+1+39 > 38 -> strip "stale · ", keep the age.
+  test("ladder rung 1: freshness-only still too long drops the leading 'stale · ' (age kept, title kept)", () => {
+    // 8 + 31 = 39-char freshness alone: 11+1+39 > 38 -> strip "stale · ", keep the age.
     const freshness = "stale · 9" + "9".repeat(30);
     expect(freshness.length).toBe(39);
     const segs = renderHeader(hdr({ freshness, stale: true }), "unicode");
@@ -528,36 +512,6 @@ describe("V2 renderHeader variants", () => {
     expect(join(segs).length).toBe(38);
     expect(segs.map((s) => s.role)).toEqual(["text", "warning"]);
     expect(join(segs)).not.toContain("…");
-  });
-
-  test("updating + level: title/sep/level are text, freshness tail is warning", () => {
-    const segs = renderHeader(hdr({ level: "max", updating: true }), "unicode");
-    const left = "Z.ai Runway · max";
-    expect(join(segs)).toBe(left + " ".repeat(38 - 12 - left.length) + "updating ...");
-    expect(join(segs).length).toBe(38);
-    expect(segs[0].role).toBe("text");
-    expect(segs[1].role).toBe("text");
-    expect(segs[2].role).toBe("text");
-    expect(segs[3].role).toBe("warning");
-  });
-
-  test("stale + level: title/sep/level are text, freshness tail is warning", () => {
-    const segs = renderHeader(
-      hdr({ level: "max", stale: true, freshness: "stale · 3m ago" }),
-      "unicode",
-    );
-    expect(segs[0].role).toBe("text");
-    expect(segs[1].role).toBe("text");
-    expect(segs[2].role).toBe("text");
-    expect(segs[segs.length - 1].role).toBe("warning");
-  });
-
-  test("idle + level: title/sep/level are text, freshness tail is textMuted", () => {
-    const segs = renderHeader(hdr({ level: "max" }), "unicode");
-    expect(segs[0].role).toBe("text");
-    expect(segs[1].role).toBe("text");
-    expect(segs[2].role).toBe("text");
-    expect(segs[segs.length - 1].role).toBe("textMuted");
   });
 
   test("stale: freshness segment gets warning role", () => {
@@ -677,9 +631,9 @@ describe("V2 ascii grid parity", () => {
   });
 
   test("ascii panel block: header/detail asciified, grid lengths identical", () => {
-    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({ level: "Lite" })), { gaugeWidth: 16, mode: "ascii" });
+    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({})), { gaugeWidth: 16, mode: "ascii" });
     expect(lines.map(join)).toEqual([
-      "Z.ai Runway - Lite" + " ".repeat(38 - 7 - 18) + "30s ago",
+      "Z.ai Runway".padEnd(38 - "30s ago".length) + "30s ago",
       "5h  #########---|---  62%   312/500 ok",
       "reset 1h 12m   runway ~2h 5m",
       "7d  ######--|-------  41%  4.1M/10M ok",
@@ -697,9 +651,9 @@ describe("V2 ascii grid parity", () => {
 
 describe("V2 renderPanelLines structure", () => {
   test("ok scenario: header + two grid lines per window, nothing degraded at 38", () => {
-    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({ level: "max" })), { gaugeWidth: 16, mode: "unicode" });
+    const lines = renderPanelLines(panelOf([w5h(), w7d()], hdr({})), { gaugeWidth: 16, mode: "unicode" });
     expect(lines).toHaveLength(5);
-    expect(join(lines[0])).toBe("Z.ai Runway · max" + " ".repeat(38 - 7 - 17) + "30s ago");
+    expect(join(lines[0])).toBe("Z.ai Runway".padEnd(38 - "30s ago".length) + "30s ago");
     expect(join(lines[1])).toBe("5h  █████████▉░░│░░░  62%   312/500  ✓");
     expect(join(lines[2])).toBe("reset 1h 12m   runway ~2h 5m");
     expect(join(lines[3])).toBe("7d  ██████▌░│░░░░░░░  41%  4.1M/10M  ✓");
@@ -1177,7 +1131,7 @@ describe("tester audit: grid adversarial labels", () => {
 
 describe("tester audit: header ladder rung sequence", () => {
   test("rung 1 only: 24-char level + 'stale · 98h ago' (15ch) drops the level and STOPS (age fits)", () => {
-    const segs = renderHeader(hdr({ level: "a".repeat(24), freshness: "stale · 98h ago", stale: true }), "unicode");
+    const segs = renderHeader(hdr({ freshness: "stale · 98h ago", stale: true }), "unicode");
     const line = join(segs);
     expect(line).toBe("Z.ai Runway".padEnd(38 - "stale · 98h ago".length) + "stale · 98h ago"); // exact rung-1 output
     expect(line.length).toBe(38);
@@ -1191,7 +1145,7 @@ describe("tester audit: header ladder rung sequence", () => {
     // fires; the 20-char age then fits (10+1+20 = 31 <= 38) — ladder stops at 2.
     const freshness = "stale · " + "d".repeat(20);
     expect(freshness.length).toBe(28);
-    const segs = renderHeader(hdr({ level: "a".repeat(24), freshness, stale: true }), "unicode");
+    const segs = renderHeader(hdr({ freshness, stale: true }), "unicode");
     const line = join(segs);
     expect(line).toBe("Z.ai Runway".padEnd(38 - 20) + "d".repeat(20));
     expect(line.length).toBe(38);
@@ -1226,7 +1180,7 @@ describe("tester audit: detail floor worst runway", () => {
 
 describe("tester audit: freshness day cap + ascii parity columns", () => {
   test("beyond the 8-char tier cap: 'stale · 1000d ago' (17ch) drops the level at rung 1 and fits 38", () => {
-    const segs = renderHeader(hdr({ level: "a".repeat(24), freshness: "stale · 1000d ago", stale: true }), "unicode");
+    const segs = renderHeader(hdr({ freshness: "stale · 1000d ago", stale: true }), "unicode");
     const line = join(segs);
     expect(line).toBe("Z.ai Runway".padEnd(38 - "stale · 1000d ago".length) + "stale · 1000d ago");
     expect(line.length).toBe(38);
@@ -1246,7 +1200,6 @@ describe("header suffix hard floor (grid-align review nit)", () => {
   test("pathological post-ladder suffix is truncated so the header never exceeds targetWidth", () => {
     const header = {
       title: "Z.ai Runway" as const,
-      level: null,
       freshness: "0".repeat(35),
       stale: true,
       updating: false,
@@ -1295,106 +1248,75 @@ describe("quick-fixes: title, bold level, detail grid columns (RED)", () => {
     expect(join(renderDetailLine(blocked, "unicode"))).toBe("reset 42m      limit reached")
   })
 
-  test("header: level segment carries bold and the joined line still ends at col 37", () => {
-    const segs = renderHeader({ title: "Z.ai Runway" as any, level: "Lite", freshness: "30s ago", stale: false, updating: false }, "unicode")
-    const levelSeg = segs.find((s) => s.text === "Lite")
-    expect(levelSeg).toBeDefined()
-    expect((levelSeg as any).bold).toBe(true)
-    const left = "Z.ai Runway · Lite"
-    expect(join(segs)).toBe(left + " ".repeat(38 - 7 - left.length) + "30s ago")
-    expect(join(segs).length).toBe(38)
-    // v2 targeted bold: title + dot + level bold; "plan: " label and time plain
-    for (const s of segs) {
-      if (s.text === "Lite" || s.text === " · " || s.text === "Z.ai Runway") expect((s as any).bold).toBe(true)
-      else expect((s as any).bold).toBeFalsy()
-    }
-  })
-
-  test("header without level: title bold, time plain (superseded by v2 format)", () => {
-    const segs = renderHeader({ title: "Z.ai Runway" as any, level: null, freshness: "30s ago", stale: false, updating: false }, "unicode")
+  test("header: title segment is bold, time segment is plain, joined line still ends at col 37", () => {
+    const segs = renderHeader({ title: "Z.ai Runway" as any, freshness: "30s ago", stale: false, updating: false }, "unicode")
     expect(join(segs)).toBe("Z.ai Runway" + " ".repeat(38 - 11 - 7) + "30s ago")
+    expect(join(segs).length).toBe(38)
     expect(segs[0].bold).toBe(true)
     expect(segs[1].bold).toBeFalsy()
   })
 })
 
-describe("header format v3: plan cluster inherits title role (not state role)", () => {
-  const LEFT = (lvl: string) => "Z.ai Runway" + " · " + lvl
-
-  test("ok: title · plan: Pro <pad> time — joined 38, col-37 right edge", () => {
-    const segs = renderHeader(hdr({ level: "Pro" }), "unicode")
-    expect(join(segs)).toBe(LEFT("Pro") + " ".repeat(38 - 7 - LEFT("Pro").length) + "30s ago")
+describe("header format v3 removed: plan cluster gone", () => {
+  test("ok: title + pad + time — joined 38, no level, 2 segments", () => {
+    const segs = renderHeader(hdr(), "unicode")
+    expect(join(segs)).toBe("Z.ai Runway" + " ".repeat(38 - 11 - 7) + "30s ago")
     expect(join(segs).length).toBe(38)
   })
 
-  test("segment structure: title/dot/level all text+bold, freshness tail textMuted", () => {
-    const segs = renderHeader(hdr({ level: "Pro" }), "unicode")
-    expect(segs[0]).toEqual({ text: "Z.ai Runway", role: "text", bold: true })
-    expect(segs[1]).toEqual({ text: " · ", role: "text", bold: true })
-    expect(segs[2]).toEqual({ text: "Pro", role: "text", bold: true })
-    expect(segs[3]).toEqual({ text: " ".repeat(38 - 7 - 17) + "30s ago", role: "textMuted" })
-  })
-
-  test("updating (click): title/dot/level stay text, only freshness tail turns warning", () => {
-    const segs = renderHeader(hdr({ level: "Pro", updating: true }), "unicode")
-    expect(join(segs)).toBe(LEFT("Pro") + " ".repeat(38 - 12 - LEFT("Pro").length) + "updating ...")
-    expect(segs[0].role).toBe("text")
-    expect(segs[1].role).toBe("text")
-    expect(segs[2].role).toBe("text")
-    expect(segs[3].role).toBe("warning")
-    expect(segs[2].bold).toBe(true) // level stays bold
-    expect(segs[3].bold).toBeFalsy() // time stays plain
-  })
-
-  test("stale: title/dot/level stay text, only freshness tail turns warning", () => {
-    const segs = renderHeader(hdr({ level: "Pro", stale: true, freshness: "stale · 3m ago" }), "unicode")
-    expect(join(segs)).toBe(LEFT("Pro") + " ".repeat(38 - 14 - LEFT("Pro").length) + "stale · 3m ago")
-    expect(segs[0].role).toBe("text")
-    expect(segs[1].role).toBe("text")
-    expect(segs[2].role).toBe("text")
-    expect(segs[segs.length - 1].role).toBe("warning")
-  })
-
-  test("level null: cluster hidden entirely — title + time only", () => {
+  test("segment structure: title bold, freshness tail textMuted", () => {
     const segs = renderHeader(hdr(), "unicode")
+    expect(segs[0]).toEqual({ text: "Z.ai Runway", role: "text", bold: true })
+    expect(segs[1]).toEqual({ text: " ".repeat(38 - 11 - 7) + "30s ago", role: "textMuted" })
     expect(segs).toHaveLength(2)
-    expect(join(segs)).toBe("Z.ai Runway" + " ".repeat(38 - 11 - 7) + "30s ago")
+  })
+
+  test("updating (click): only freshness tail turns warning, title stays text", () => {
+    const segs = renderHeader(hdr({ updating: true }), "unicode")
+    expect(segs[0].role).toBe("text")
+    expect(segs[1].role).toBe("warning")
     expect(segs[0].bold).toBe(true)
     expect(segs[1].bold).toBeFalsy()
   })
 
-  test("rung 1: long level drops the whole '· plan:' cluster", () => {
-    const segs = renderHeader(hdr({ level: "a".repeat(21) }), "unicode")
-    expect(join(segs)).not.toContain("plan:")
-    expect(join(segs)).toBe("Z.ai Runway" + " ".repeat(38 - 11 - 7) + "30s ago")
+  test("stale: only freshness tail turns warning, title stays text", () => {
+    const segs = renderHeader(hdr({ stale: true, freshness: "stale · 3m ago" }), "unicode")
+    expect(segs[0].role).toBe("text")
+    expect(segs[segs.length - 1].role).toBe("warning")
   })
 
-  test("rung 2 after rung 1: stale prefix stripped from a long age", () => {
-    const freshness = "stale · " + "9".repeat(20)
-    const segs = renderHeader(hdr({ level: "Pro", freshness, stale: true }), "unicode")
-    expect(join(segs)).toBe("Z.ai Runway" + " ".repeat(38 - 11 - 20) + "9".repeat(20))
+  test("rung 1 (now: stale-prefix strip): 28-char age gets the 'stale · ' prefix dropped, age kept", () => {
+    const freshness = "stale · " + "d".repeat(20)
+    expect(freshness.length).toBe(28)
+    const segs = renderHeader(hdr({ freshness, stale: true }), "unicode")
+    const line = join(segs)
+    expect(line).toBe("Z.ai Runway".padEnd(38 - 20) + "d".repeat(20))
+    expect(line.length).toBe(38)
+    expect(line).not.toContain("stale") // prefix dropped
+    expect(line).toContain("dddd") // age kept
+    expect(segs[1].role).toBe("warning")
   })
 
   test("floor: pathological age truncated to the 26-col budget", () => {
-    const segs = renderHeader(hdr({ level: "Pro", freshness: "0".repeat(30), stale: true }), "unicode")
+    const segs = renderHeader(hdr({ freshness: "0".repeat(30), stale: true }), "unicode")
     expect(join(segs)).toBe("Z.ai Runway " + "0".repeat(26))
     expect(join(segs).length).toBe(38)
   })
 
-  test("ascii: separator asciifies to ' - ', grid identical", () => {
-    const segs = renderHeader(hdr({ level: "Pro" }), "ascii")
-    expect(join(segs)).toBe("Z.ai Runway - Pro" + " ".repeat(38 - 7 - 17) + "30s ago")
+  test("ascii: title + age right-flush, no separator", () => {
+    const segs = renderHeader(hdr({ stale: true, freshness: "stale · 3m ago" }), "ascii")
+    expect(join(segs)).toBe("Z.ai Runway".padEnd(38 - "stale - 3m ago".length) + "stale - 3m ago")
     expect(join(segs).length).toBe(38)
   })
 
-  test("col-37 invariant: time block ends at column 38 (index 37) in every state", () => {
+  test("col-37 invariant: line ends at column 38 (index 37) in every state", () => {
     const cases = [
-      hdr({ level: "Pro" }),
-      hdr({ level: "Pro", updating: true }),
-      hdr({ level: "Pro", stale: true, freshness: "stale · 3m ago" }),
       hdr(),
-      hdr({ level: "a".repeat(21) }),
-      hdr({ level: "Max plan" }),
+      hdr({ updating: true }),
+      hdr({ stale: true, freshness: "stale · 3m ago" }),
+      hdr(),
+      hdr({}),
+      hdr({}),
     ]
     for (const h of cases) {
       for (const mode of ["unicode", "ascii"] as const) {

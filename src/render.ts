@@ -197,13 +197,12 @@ export function renderDetailLine(w: WindowModel, mode: GlyphMode): Segment[] {
 const STALE_PREFIX = "stale · ";
 
 /**
- * Header line, right-aligned onto the grid: `title ... suffix` where suffix
- * = [level, freshness] joined " · " (freshness becomes the literal
- * "updating ..." — 3-dot in both modes — while updating). Ladder when
- * title + 1 gap + suffix overflows targetWidth: drop the level, then the
- * leading "stale · " of the freshness; title and age are never dropped and
- * at least one gap column always survives. Two segments: padded title
- * (text) and suffix (warning while stale/updating, else textMuted).
+ * Header line, right-aligned onto the grid: `title <pad> <age>` where age is
+ * the freshness text (or the literal "updating ..." while refreshing).
+ * Ladder when title + 1 gap + age overflows targetWidth: strip the leading
+ * "stale · " of the freshness; title and age are never dropped and at least
+ * one gap column always survives. Two segments: padded title (text) and
+ * freshness tail (warning while stale/updating, else textMuted).
  */
 export function renderHeader(
   header: V2PanelModel["header"],
@@ -211,42 +210,22 @@ export function renderHeader(
   targetWidth: number = GRID.width,
 ): Segment[] {
   const title = header.title;
-  const sep = textFor(mode, " · ");
   const age = textFor(mode, header.freshness);
-  const tail = header.updating ? "updating ..." : age;
-  const level = header.level != null ? textFor(mode, header.level) : null;
-  // Header format v2: "Z.ai Runway · <Level> <pad> <age>" with targeted
-  // bold (title, dot, level) — age stays plain. Colors untouched:
-  // the whole suffix cluster keeps the v1 role (textMuted, warning when
-  // stale/updating).
-  const fits = (left: string, right: string): boolean => left.length + 1 + right.length <= targetWidth;
-  let left = level != null ? title + sep + level : title;
-  let right = tail;
-  // Ladder rung 1: drop the whole "· plan: <level>" cluster when it overflows.
-  if (!fits(left, right) && level != null) {
-    left = title;
-  }
-  // Ladder rung 2: strip the stale prefix from the age.
-  if (!fits(left, right) && header.freshness.startsWith(STALE_PREFIX)) {
+  let right = header.updating ? "updating ..." : age;
+  const fits = (left: string, tail: string): boolean => left.length + 1 + tail.length <= targetWidth;
+  if (!fits(title, right) && header.freshness.startsWith(STALE_PREFIX)) {
     right = textFor(mode, header.freshness.slice(STALE_PREFIX.length));
   }
-  // Hard floor: even after both rungs a pathological age must never push the
-  // line past targetWidth (title+age are never dropped, so truncate here).
-  const ageBudget = targetWidth - left.length - 1;
+  // Hard floor: a pathological age must never push the line past
+  // targetWidth (title+age are never dropped, so truncate here).
+  const ageBudget = targetWidth - title.length - 1;
   if (right.length > ageBudget) right = right.slice(0, ageBudget);
-  const pad = Math.max(targetWidth - left.length - right.length, 1);
+  const pad = Math.max(targetWidth - title.length - right.length, 1);
   const role: SegmentRole = header.updating || header.stale ? "warning" : "textMuted";
-  // Header format v3: "Z.ai Runway · <Level> <pad> <age>" with the level
-  // cluster inheriting the title's text role (and bold) so the plan name
-  // does not recolor when the panel is updating or stale. Only the
-  // freshness tail carries the state role.
-  const segs: Segment[] = [{ text: title, role: "text", bold: true }];
-  if (left !== title) {
-    segs.push({ text: sep, role: "text", bold: true });
-    segs.push({ text: level as string, role: "text", bold: true });
-  }
-  segs.push({ text: " ".repeat(pad) + right, role });
-  return segs;
+  return [
+    { text: title, role: "text", bold: true },
+    { text: " ".repeat(pad) + right, role },
+  ];
 }
 
 /** Error taxonomy code -> human text (render owns the presentation; each fits the 38-col grid). */

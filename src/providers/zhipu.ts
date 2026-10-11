@@ -71,13 +71,6 @@ function extractData(payload: unknown): Record<string, unknown> | null {
   return data as Record<string, unknown>;
 }
 
-function extractLevel(payload: unknown): string | null {
-  const data = extractData(payload);
-  if (data === null) return null;
-  const level = data.level;
-  return typeof level === "string" && level !== "" ? level : null;
-}
-
 function isEntryObject(entry: unknown): entry is Record<string, unknown> {
   if (typeof entry !== "object" || entry === null) return false;
   return Object.keys(entry).length > 0;
@@ -109,7 +102,6 @@ function scanForRows(
 }
 
 function parse(payload: unknown): ParsedQuota {
-  const level = extractLevel(payload);
   const rows: QuotaRow[] = [];
   const data = extractData(payload);
   const limits = data === null ? undefined : data.limits;
@@ -118,10 +110,10 @@ function parse(payload: unknown): ParsedQuota {
       if (rows.length >= MAX_ROWS) break;
       if (isEntryObject(entry)) rows.push(mapEntry(entry));
     }
-    return { rows, level };
+    return { rows };
   }
   scanForRows(payload, 0, new Set<object>(), rows);
-  return { rows, level };
+  return { rows };
 }
 
 export const zhipuProvider: QuotaProvider = {

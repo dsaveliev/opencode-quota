@@ -8,7 +8,7 @@ import type { ParsedQuota, QuotaProvider } from "./types";
  *   - current_interval: 5h window, reset at end_time
  *   - weekly: 7d window, reset at weekly_end_time
  *
- * The wire format differs from Zhipu in three important ways:
+ * The wire format differs from Zhipu in two important ways:
  *   1. No `unit` field. Window duration is computed from
  *      `end_time - start_time` (= exactly 5h) and
  *      `weekly_end_time - weekly_start_time` (= exactly 7d).
@@ -17,8 +17,6 @@ import type { ParsedQuota, QuotaProvider } from "./types";
  *      `current_interval_total_count` are 0. The percent fields are
  *      `*_remaining_percent` (NOT `*_used_percent`), so the direction
  *      is inverted to derive usage percent.
- *   3. No `level` (subscription tier). The header is rendered without
- *      a level cluster.
  *
  * Pseudo-usage: to keep the runway projection usable, the adapter
  * synthesises a 0..100 percent-scale row where `usage = 100 - remaining`
@@ -91,12 +89,12 @@ function isRawWindow(value: unknown): value is RawWindow {
 }
 
 function parse(payload: unknown): ParsedQuota {
-  if (typeof payload !== "object" || payload === null) return { rows: [], level: null };
+  if (typeof payload !== "object" || payload === null) return { rows: [] };
   const root = payload as Record<string, unknown>;
   const arr = root.model_remains;
-  if (!Array.isArray(arr) || arr.length === 0) return { rows: [], level: null };
+  if (!Array.isArray(arr) || arr.length === 0) return { rows: [] };
   const entry = arr.find(isRawWindow);
-  if (!entry) return { rows: [], level: null };
+  if (!entry) return { rows: [] };
   const rows: QuotaRow[] = [];
   const fiveHour = buildRow(
     "5h",
@@ -114,7 +112,7 @@ function parse(payload: unknown): ParsedQuota {
   );
   if (fiveHour) rows.push(fiveHour);
   if (weekly) rows.push(weekly);
-  return { rows, level: null };
+  return { rows };
 }
 
 export const minimaxProvider: QuotaProvider = {

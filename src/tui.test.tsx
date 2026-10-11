@@ -282,7 +282,7 @@ describe("createTuiPlugin wiring", () => {
     const panel = await renderSlot(f.slots[0].slots.sidebar_content)
     const frame = panel.captureCharFrame()
     expect(frame).toContain("Z.ai Runway")
-    expect(frame).toContain("Max Plan")
+    expect(frame).not.toContain("Max Plan")
     expect(frame).toContain("5h")
     expect(frame).toContain("7d")
     expect(frame).toContain("\u2588") // filled gauge cell
@@ -1105,7 +1105,6 @@ describe("V2 slot surfaces (W3)", () => {
       const panel = await renderSlot(f.slots[0].slots.sidebar_content)
       const frame = panel.captureCharFrame()
       expect(frame).toContain("Z.ai Runway")
-      expect(frame).toContain("Max Plan")
       expect(frame).toContain("5h")
       expect(frame).toContain("7d")
       expect(frame).toContain("\u2713") // ok verdict glyph
