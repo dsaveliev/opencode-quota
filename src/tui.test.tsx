@@ -327,6 +327,46 @@ describe("createTuiPlugin wiring", () => {
     expect(fetchCalls).toBe(1)
   })
 
+  test("model.switched during in-flight Zhipu fetch aborts it and starts a fresh MiniMax fetch", async () => {
+    // Repro for the "ноль реакции на /model" bug:
+    // 1. Initial Zhipu fetch is in flight (unresolved).
+    // 2. User runs `/model minimax-coding-plan/glm-5.3` -> session.next.model.switched.
+    // 3. The plugin must NOT reuse the in-flight Zhipu promise; it must abort the
+    //    old fetch and start a fresh one for MiniMax. Otherwise the panel keeps
+    //    showing the previous provider's data (or never moves past "loading").
+    const savedMiniMax = process.env.MINIMAX_API_KEY
+    process.env.MINIMAX_API_KEY = "test-minimax-token"
+    const f = fakeApi()
+    let release: ((r: StubResponse) => void) | null = null
+    respond = () =>
+      new Promise((res) => {
+        release = res
+      })
+    await createTuiPlugin(f.api, OPT, {})
+    pendingDispose.push(() => f.handlers.get("__dispose")?.())
+    expect(fetchCalls).toBe(1) // Zhipu initial in flight
+
+    const handler = f.handlers.get("session.next.model.switched")
+    expect(handler).toBeDefined()
+    handler({ properties: { model: { providerID: "minimax-coding-plan" } } })
+    await tick()
+    // Switch is force=true: a fresh fetch must have been started for MiniMax,
+    // even though the Zhipu fetch is still in flight. Without the abort/race
+    // fix, scheduleRefresh returned the in-flight Zhipu promise and no second
+    // fetch was issued.
+    expect(fetchCalls).toBe(2)
+
+    // Releasing the original Zhipu fetch now must NOT clobber the MiniMax state.
+    // The panel should not show Zhipu's "62%" / "5h" data after the user
+    // explicitly switched to MiniMax.
+    release!(stubOk())
+    await tick()
+    expect(fetchCalls).toBe(2)
+
+    if (savedMiniMax === undefined) delete process.env.MINIMAX_API_KEY
+    else process.env.MINIMAX_API_KEY = savedMiniMax
+  })
+
   test("session.idle within intervalMs/2 is throttled away", async () => {
     const f = fakeApi()
     await createTuiPlugin(f.api, OPT, {})

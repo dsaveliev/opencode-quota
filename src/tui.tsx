@@ -137,6 +137,11 @@ export async function createTuiPlugin(
         endpoint,
         timeoutMs: config.timeoutMs,
       })
+      // Stale-fetch guard: a provider switch (or any path that resets
+      // inFlight via switchActiveProvider) can clear the slot while this
+      // fetch is in flight. If the active provider is no longer the one
+      // we started this fetch for, drop the result on the floor.
+      if (activeProvider() !== provider) return
       if (!result.ok) {
         setError(result.error)
         return
@@ -369,16 +374,34 @@ export async function createTuiPlugin(
   const tickTimer = setInterval(() => setTick((t) => t + 1), 10_000)
   const offIdle = api.event.on("session.idle", () => scheduleRefresh(false).catch(() => {}))
   const offErr = api.event.on("session.error", () => scheduleRefresh(true).catch(() => {}))
+  // Track the last non-null provider id so the "no provider" toast can
+  // surface the model's id (or "unknown") instead of a blank message.
+  let lastKnownProviderId: string | null = null
+
   // Active-provider switch. Wipe the visible state (rows/error/freshness)
   // so the panel doesn't keep showing the previous provider's data while
   // the new fetch is in flight; then trigger a forced refresh.
   function switchActiveProvider(next: QuotaProvider | null): void {
+    if (next) lastKnownProviderId = next.id
+    // Drop the in-flight slot so scheduleRefresh starts a fresh fetch for
+    // `next` (or skips if null). The old fetch's doRefresh() will see the
+    // activeProvider mismatch via its post-await guard and discard the result.
+    inFlight = null
     setActiveProvider(next)
     setRows([])
     setError(null)
     setUpdatedAt(null)
     setLastAttemptAt(null)
-    if (next) scheduleRefresh(true).catch(() => {})
+    if (next) {
+      scheduleRefresh(true).catch(() => {})
+    } else {
+      api.ui.toast({
+        variant: "warning",
+        title: "OpenCode Quota Runway",
+        message: `no quota provider for ${lastKnownProviderId ?? "current session"}`,
+        duration: 4000,
+      })
+    }
   }
   const offModelSwitched = api.event.on("session.next.model.switched", (e: any) => {
     const id = e?.properties?.model?.providerID as string | undefined
