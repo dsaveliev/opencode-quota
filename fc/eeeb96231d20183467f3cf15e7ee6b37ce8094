@@ -1,0 +1,21 @@
+src/tui.test.tsx
+  s_c4204f325231d7::t_5a7965bc0c5607 370-400
+src/tui.tsx
+  s_c4204f325231d7::t_312e81ac7e86d0 415-429
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "fceeeb96231d20183467f3cf15e7ee6b37ce8094",
+  "prompts": {},
+  "sessions": {
+    "s_c4204f325231d7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ed4ef39e3ffeOEWzGj9XNIVsHH",
+        "model": "MiniMax-M3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
