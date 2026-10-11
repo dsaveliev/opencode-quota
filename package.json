@@ -1,0 +1,39 @@
+{
+  "name": "opencode-quota-runway",
+  "version": "1.1.0",
+  "description": "OpenCode TUI plugin - coding-plan quota with runway projection for Zhipu (Z.AI / Zhipu coding plan) and MiniMax (Token Plan) providers, timer pull, theme-native rendering, active-provider auto-detection",
+  "type": "module",
+  "license": "MIT",
+  "main": "src/index.ts",
+  "homepage": "https://github.com/dsaveliev/opencode-quota-runway",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dsaveliev/opencode-quota-runway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dsaveliev/opencode-quota-runway/issues"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "quota",
+    "runway",
+    "tui"
+  ],
+  "scripts": {
+    "test": "bun test",
+    "check": "tsc --noEmit",
+    "check:all": "bun run check && bun test"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.18.0",
+    "solid-js": "^1.9.0"
+  },
+  "devDependencies": {
+    "@opentui/core": "^0.5.14",
+    "@opentui/keymap": "^0.5.14",
+    "@opentui/solid": "^0.5.14",
+    "@types/bun": "^1.4.0",
+    "typescript": "^5.9.0"
+  }
+}
