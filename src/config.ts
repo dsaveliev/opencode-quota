@@ -33,8 +33,11 @@ export const DEFAULT_CONFIG: Readonly<QuotaConfig> = {
   tightFactor: 1.5,
   glyphs: "unicode",
   detail: "always",
-  tokenEnv: ["ZAI_TOKEN", "Z_AI_TOKEN"],
-  authKeys: ["zai-coding-plan", "zai"],
+  // Per-provider defaults live on the registry (zhipuProvider.tokenEnv,
+  // minimaxProvider.authKeys, etc.). The global config only stores user
+  // overrides; an empty array means "let the active provider decide".
+  tokenEnv: [],
+  authKeys: [],
 };
 
 const NUMERIC_KEYS = [

@@ -15,8 +15,8 @@ describe("resolveConfig", () => {
     expect(config.tightFactor).toBe(1.5);
     expect(config.glyphs).toBe("unicode");
     expect(config.detail).toBe("always");
-    expect(config.tokenEnv).toEqual(["ZAI_TOKEN", "Z_AI_TOKEN"]);
-    expect(config.authKeys).toEqual(["zai-coding-plan", "zai"]);
+    expect(config.tokenEnv).toEqual([]);
+    expect(config.authKeys).toEqual([]);
     expect(warnings).toEqual([]);
     expect(config).toEqual(DEFAULT_CONFIG);
   });
@@ -157,11 +157,11 @@ describe("resolveConfig", () => {
     expect(resolveConfig({}, { tokenEnv: ["A", ""] }).config.tokenEnv).toEqual(["A"]);
 
     const emptyList = resolveConfig({}, { tokenEnv: [] });
-    expect(emptyList.config.tokenEnv).toEqual(["ZAI_TOKEN", "Z_AI_TOKEN"]);
+    expect(emptyList.config.tokenEnv).toEqual([]);
     expect(emptyList.warnings.some((w) => w.includes("tokenEnv"))).toBe(true);
 
     const notArray = resolveConfig({}, { tokenEnv: "not-array" });
-    expect(notArray.config.tokenEnv).toEqual(["ZAI_TOKEN", "Z_AI_TOKEN"]);
+    expect(notArray.config.tokenEnv).toEqual([]);
     expect(notArray.warnings.some((w) => w.includes("tokenEnv"))).toBe(true);
 
     expect(resolveConfig({}, { authKeys: ["k2"] }).config.authKeys).toEqual(["k2"]);
