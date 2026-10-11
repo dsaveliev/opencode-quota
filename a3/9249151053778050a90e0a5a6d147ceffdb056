@@ -1,0 +1,31 @@
+README.md
+  s_c4204f325231d7::t_e496a9f0a14d14 30,35-36,38,47-48,51
+  s_c4204f325231d7::t_440ae5a6ddbfe0 1
+  s_c4204f325231d7::t_4224c789aa8418 23
+  s_c4204f325231d7::t_700d7b55e388b8 4
+  s_c4204f325231d7::t_fde65f84353883 165
+  s_c4204f325231d7::t_bd2445147dee1b 163
+  s_c4204f325231d7::t_404c09818c2be3 65-66
+  s_c4204f325231d7::t_50f711c676f8df 200
+  s_c4204f325231d7::t_0d88295ee23d60 172-173
+  s_c4204f325231d7::t_079edc7f2c9311 129,135,146
+  s_c4204f325231d7::t_65dc95dcea750b 70
+openspec/specs/opencode-quota-runway/spec.md
+  s_c4204f325231d7::t_507b39d2e0779f 303
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "a39249151053778050a90e0a5a6d147ceffdb056",
+  "prompts": {},
+  "sessions": {
+    "s_c4204f325231d7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ed4ef39e3ffeOEWzGj9XNIVsHH",
+        "model": "MiniMax-M3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
