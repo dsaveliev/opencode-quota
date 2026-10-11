@@ -300,7 +300,7 @@ invalid value falls back to that key's default with a recorded
 warning instead of throwing. Keys SHALL include `tightFactor`
 (finite, >= 1, default 1.5), `glyphs` ("unicode" | "ascii",
 default "unicode"), `detail` ("always" | "auto", default
-"always"), and `gaugeWidth` (int clamp 4..40, default 16), in
+"always"), and `gaugeWidth` (int clamp 4..40, default 26), in
 addition to the legacy keys. The legacy `ZAI_QUOTA_*` environment
 variable names SHALL continue to work for backward compatibility
 and SHALL apply to the Zhipu provider.
