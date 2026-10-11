@@ -1,0 +1,46 @@
+src/render.ts
+  s_c4204f325231d7::t_049ec96ef6369a 200-205,214-216,219-221,223,225-228
+src/providers/minimax.ts
+  s_c4204f325231d7::t_e07714c27119c8 92,95,97,115
+  s_c4204f325231d7::t_b0b9682638bd45 11
+src/render.test.ts
+  s_c4204f325231d7::t_fb78e3cddbeffc 459,462,1134,1148,1183
+  s_c4204f325231d7::t_fe3897ef513227 484,486,493-494
+  s_c4204f325231d7::t_6ddda0ad11bb7e 1251,1254
+  s_c4204f325231d7::t_e629a5a9a73d56 113,326,340,634,654,1252
+  s_c4204f325231d7::t_57d236b40fe02b 1260-1263,1267-1268,1270-1271,1274-1275,1277,1282-1285,1288-1297,1301,1306-1308,1312,1315-1319
+  s_c4204f325231d7::t_4e6683948b5c14 339,341,343-344
+  s_c4204f325231d7::t_01c537969dde94 319,636,656
+src/model.test.ts
+  s_c4204f325231d7::t_4a19df07643e09 899-903
+  s_c4204f325231d7::t_1538fdda2cf8f4 967,969
+  s_c4204f325231d7::t_e629a5a9a73d56 715,731,968
+src/providers/zhipu.ts
+  s_c4204f325231d7::t_1b9a8781025f9f 113,116
+src/providers/minimax.test.ts
+  s_c4204f325231d7::t_247e88506eccb6 43-44,64,66
+src/tui.test.tsx
+  s_c4204f325231d7::t_6b8fbd31daa930 285
+src/providers/types.ts
+  s_c4204f325231d7::t_35a9ee48d47f5c 4-6,8
+src/providers/zhipu.test.ts
+  s_c4204f325231d7::t_93809a5aff8181 34
+src/model.ts
+  s_c4204f325231d7::t_778b0e8ab65961 47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "4bddf4e7da95fd0b6caf43666ea918cb0d8b768b",
+  "prompts": {},
+  "sessions": {
+    "s_c4204f325231d7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ed4ef39e3ffeOEWzGj9XNIVsHH",
+        "model": "MiniMax-M3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
