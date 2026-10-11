@@ -1,0 +1,24 @@
+src/config.ts
+  s_c4204f325231d7::t_c7ef866ddfe5b3 3-9
+  s_c4204f325231d7::t_d6bb5ef57ee5e5 27
+src/config.test.ts
+  s_c4204f325231d7::t_c36e1dc262e533 152
+  s_c4204f325231d7::t_b0bf7ed2adbb04 9
+  s_c4204f325231d7::t_7d59c7a1d28c08 125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "a6c80e5069136f7555564e3d51372bc244caff65",
+  "prompts": {},
+  "sessions": {
+    "s_c4204f325231d7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ed4ef39e3ffeOEWzGj9XNIVsHH",
+        "model": "MiniMax-M3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
