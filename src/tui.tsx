@@ -403,14 +403,23 @@ export async function createTuiPlugin(
       })
     }
   }
+  // Two flavours of "where is the providerID" — payload direct (model.switched
+  // already carries it) vs state lookup (session.select / session.updated
+  // only carry a sessionID, so the model must be fetched from opencode's
+  // reactive session cache). Extracted so each handler stays a one-liner
+  // and the chain is consistent.
+  const providerIdFromModelPayload = (e: any): string | undefined =>
+    e?.properties?.model?.providerID as string | undefined
+  const providerIdFromSessionState = (sid: string): string | undefined =>
+    api.state?.session?.get(sid)?.model?.providerID as string | undefined
+
   const offModelSwitched = api.event.on("session.next.model.switched", (e: any) => {
-    const id = e?.properties?.model?.providerID as string | undefined
-    switchActiveProvider(resolve(id))
+    switchActiveProvider(resolve(providerIdFromModelPayload(e)))
   })
   const offTuiSession = api.event.on("tui.session.select", (e: any) => {
-    const id = e?.properties?.sessionID as string | undefined
-    if (!id) return
-    switchActiveProvider(resolve(api.state?.session?.get(id)?.model?.providerID as string | undefined))
+    const sid = e?.properties?.sessionID as string | undefined
+    if (!sid) return
+    switchActiveProvider(resolve(providerIdFromSessionState(sid)))
   })
   // Fallback: opencode sometimes delivers model/agent changes via the
   // generic session.updated event (carrying the new model in info.model)
@@ -418,11 +427,12 @@ export async function createTuiPlugin(
   // switch only if the active provider actually changed — the no-op guard
   // keeps the refresh engine from firing on every per-message update.
   const offSessionUpdated = api.event.on("session.updated", (e: any) => {
+    // Opencode sometimes fires session.updated without a sessionID in the
+    // payload (e.g. for bulk updates) — fall back to the route's current.
     const sid = (e?.properties?.sessionID as string | undefined) ??
       api.route?.current?.params?.sessionID
     if (!sid) return
-    const pid = api.state?.session?.get(sid)?.model?.providerID as string | undefined
-    const next = resolve(pid)
+    const next = resolve(providerIdFromSessionState(sid))
     if (next == null && activeProvider() == null) return
     if (next?.id === activeProvider()?.id) return
     switchActiveProvider(next)
