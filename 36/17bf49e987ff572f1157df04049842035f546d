@@ -1,0 +1,201 @@
+.github/workflows/ci.yml
+  s_c20eeaea2c1123::t_c7528e8c534b02 1-25
+.gitignore
+  s_c20eeaea2c1123::t_48ce9739468b9b 1-2
+.opencode/agents/coder.md
+  s_c20eeaea2c1123::t_14a1e9bc4ee932 1-25
+.opencode/agents/orchestrator.md
+  s_c20eeaea2c1123::t_3050ded5412c76 1-89
+.opencode/agents/planner.md
+  s_c20eeaea2c1123::t_6de1f3772a9889 1-28
+.opencode/agents/reviewer.md
+  s_c20eeaea2c1123::t_0586a7244c3036 1-34
+.opencode/agents/tester.md
+  s_c20eeaea2c1123::t_fc31e2786038e9 1-33
+.opencode/commands/opsx-apply.md
+  s_c20eeaea2c1123::t_a8b8464d057e4f 1-198
+.opencode/commands/opsx-archive.md
+  s_c20eeaea2c1123::t_9803b72b14f21e 1-261
+.opencode/commands/opsx-bulk-archive.md
+  s_c20eeaea2c1123::t_102783af4743f8 1-369
+.opencode/commands/opsx-continue.md
+  s_c20eeaea2c1123::t_2e8f7b0720ffc7 1-121
+.opencode/commands/opsx-explore.md
+  s_c20eeaea2c1123::t_6ffea77f0ff1c1 1-236
+.opencode/commands/opsx-ff.md
+  s_c20eeaea2c1123::t_d005f64016bb59 1-121
+.opencode/commands/opsx-new.md
+  s_c20eeaea2c1123::t_b5743c1ee4fcfc 1-80
+.opencode/commands/opsx-onboard.md
+  s_c20eeaea2c1123::t_17b852c3fdd212 1-567
+.opencode/commands/opsx-propose.md
+  s_c20eeaea2c1123::t_93935937862cd8 1-167
+.opencode/commands/opsx-sync.md
+  s_c20eeaea2c1123::t_5b8f19ab09cc29 1-283
+.opencode/commands/opsx-update.md
+  s_c20eeaea2c1123::t_1709b8755a05c8 1-102
+.opencode/commands/opsx-verify.md
+  s_c20eeaea2c1123::t_4be58009da356f 1-212
+.opencode/commands/team-change.md
+  s_c20eeaea2c1123::t_f2cf47717efd3f 1-31
+.opencode/commands/team.md
+  s_c20eeaea2c1123::t_db2b9f96c3f88f 1-25
+.opencode/opencode.json
+  s_c20eeaea2c1123::t_d4278d28479ab5 1-38
+.opencode/scripts/gen-team-dashboard.py
+  s_c20eeaea2c1123::t_7a090ef3b130fd 1-676
+.opencode/scripts/team-dashboard.sh
+  s_c20eeaea2c1123::t_2f57dc633644f1 1-101
+.opencode/skills/api-and-interface-design/SKILL.md
+  s_c20eeaea2c1123::t_e1f7ffe89cd48b 1-367
+.opencode/skills/code-review-and-quality/SKILL.md
+  s_c20eeaea2c1123::t_c49b3d37bcaf75 1-396
+.opencode/skills/constraint-driven-development/SKILL.md
+  s_c20eeaea2c1123::t_c086997a786b67 1-311
+.opencode/skills/constraint-driven-development/references/floor-guard.md
+  s_c20eeaea2c1123::t_c843540a1cd9fc 1-168
+.opencode/skills/debugging-and-error-recovery/SKILL.md
+  s_c20eeaea2c1123::t_c7bebb55e6f26c 1-300
+.opencode/skills/doubt-driven-development/SKILL.md
+  s_c20eeaea2c1123::t_8beb70b647242f 1-243
+.opencode/skills/incremental-implementation/SKILL.md
+  s_c20eeaea2c1123::t_5f693cfae0ba55 1-249
+.opencode/skills/openspec-apply-change/SKILL.md
+  s_c20eeaea2c1123::t_1efbf17b03ef9d 1-205
+.opencode/skills/openspec-archive-change/SKILL.md
+  s_c20eeaea2c1123::t_7c26f9975c2f46 1-221
+.opencode/skills/openspec-bulk-archive-change/SKILL.md
+  s_c20eeaea2c1123::t_6eee7f7ff5c324 1-377
+.opencode/skills/openspec-continue-change/SKILL.md
+  s_c20eeaea2c1123::t_257a09aadb22d9 1-128
+.opencode/skills/openspec-explore/SKILL.md
+  s_c20eeaea2c1123::t_c7375ca911b040 1-354
+.opencode/skills/openspec-ff-change/SKILL.md
+  s_c20eeaea2c1123::t_4e07c524f2c27c 1-128
+.opencode/skills/openspec-new-change/SKILL.md
+  s_c20eeaea2c1123::t_1985cb55827f9f 1-88
+.opencode/skills/openspec-onboard/SKILL.md
+  s_c20eeaea2c1123::t_3cce2e33846248 1-575
+.opencode/skills/openspec-propose/SKILL.md
+  s_c20eeaea2c1123::t_a90121f75fa1e1 1-174
+.opencode/skills/openspec-sync-specs/SKILL.md
+  s_c20eeaea2c1123::t_64c66dab1e9938 1-290
+.opencode/skills/openspec-update-change/SKILL.md
+  s_c20eeaea2c1123::t_c7c4a0d3aaecb6 1-109
+.opencode/skills/openspec-verify-change/SKILL.md
+  s_c20eeaea2c1123::t_d261e211f06787 1-220
+.opencode/skills/planning-and-task-breakdown/SKILL.md
+  s_c20eeaea2c1123::t_3b36dcdda4da27 1-257
+.opencode/skills/security-and-hardening/SKILL.md
+  s_c20eeaea2c1123::t_6693a149ed156f 1-216
+.opencode/skills/security-and-hardening/references/hardening-patterns.md
+  s_c20eeaea2c1123::t_b7de74b0cb0617 1-324
+.opencode/skills/spec-driven-development/SKILL.md
+  s_c20eeaea2c1123::t_eef27e599d448d 1-251
+.opencode/skills/test-driven-development/SKILL.md
+  s_c20eeaea2c1123::t_47e37313d14126 1-398
+CONSTRAINTS.md
+  s_c20eeaea2c1123::t_cee98028b20e9e 1-34
+DECISIONS.md
+  s_c20eeaea2c1123::t_b443bbd9b85fb5 1-32
+LICENSE
+  s_c20eeaea2c1123::t_633597f90657b2 1-21
+TASK.md
+  s_c20eeaea2c1123::t_648f942074760a 1-35
+bun.lock
+  s_c20eeaea2c1123::t_e03d9c0fb6a5c1 1-313
+openspec/changes/archive/2026-10-04-zai-quota-grid-align/.openspec.yaml
+  s_c20eeaea2c1123::t_a5a40c6b217de4 1-2
+openspec/changes/archive/2026-10-04-zai-quota-grid-align/README.md
+  s_c20eeaea2c1123::t_2cb2d219efec62 1-3
+openspec/changes/archive/2026-10-04-zai-quota-grid-align/design.md
+  s_c20eeaea2c1123::t_9d1d6bac05e54b 1-77
+openspec/changes/archive/2026-10-04-zai-quota-grid-align/proposal.md
+  s_c20eeaea2c1123::t_2273ed213acb46 1-55
+openspec/changes/archive/2026-10-04-zai-quota-grid-align/specs/zai-quota/spec.md
+  s_c20eeaea2c1123::t_f1574b488143aa 1-46
+openspec/changes/archive/2026-10-04-zai-quota-grid-align/tasks.md
+  s_c20eeaea2c1123::t_817990dc2125d8 1-59
+openspec/changes/archive/2026-10-04-zai-quota-plugin/.openspec.yaml
+  s_c20eeaea2c1123::t_734412d1943a78 1-2
+openspec/changes/archive/2026-10-04-zai-quota-plugin/README.md
+  s_c20eeaea2c1123::t_31c7543e77150b 1-3
+openspec/changes/archive/2026-10-04-zai-quota-plugin/design.md
+  s_c20eeaea2c1123::t_524104dd6d1c62 1-184
+openspec/changes/archive/2026-10-04-zai-quota-plugin/proposal.md
+  s_c20eeaea2c1123::t_2b5400e4cf1549 1-64
+openspec/changes/archive/2026-10-04-zai-quota-plugin/specs/zai-quota/spec.md
+  s_c20eeaea2c1123::t_24e68dcb542fdd 1-85
+openspec/changes/archive/2026-10-04-zai-quota-plugin/tasks.md
+  s_c20eeaea2c1123::t_40c59a819152f2 1-278
+openspec/changes/archive/2026-10-04-zai-quota-redesign/.openspec.yaml
+  s_c20eeaea2c1123::t_caaa80aef7efb9 1-2
+openspec/changes/archive/2026-10-04-zai-quota-redesign/README.md
+  s_c20eeaea2c1123::t_df6f1198306908 1-3
+openspec/changes/archive/2026-10-04-zai-quota-redesign/design.md
+  s_c20eeaea2c1123::t_e6098252e77908 1-134
+openspec/changes/archive/2026-10-04-zai-quota-redesign/proposal.md
+  s_c20eeaea2c1123::t_4f003d982723f0 1-64
+openspec/changes/archive/2026-10-04-zai-quota-redesign/specs/zai-quota/spec.md
+  s_c20eeaea2c1123::t_76fcd96a1ccaae 1-117
+openspec/changes/archive/2026-10-04-zai-quota-redesign/tasks.md
+  s_c20eeaea2c1123::t_1376101fa44d6a 1-195
+openspec/changes/archive/2026-10-11-header-tier-role/.openspec.yaml
+  s_5a7a28af6455a3::t_9ef110dd8811ec 1-2
+openspec/changes/archive/2026-10-11-multi-provider/.openspec.yaml
+  s_5a7a28af6455a3::t_6d5842552df99f 1-2
+openspec/changes/archive/2026-10-11-rename-and-docs/.openspec.yaml
+  s_5a7a28af6455a3::t_fe0b0a8a7c80f7 1-2
+openspec/changes/archive/2026-10-11-windowms-and-rolling/.openspec.yaml
+  s_5a7a28af6455a3::t_4fcc3a00b88581 1-2
+openspec/config.yaml
+  s_c20eeaea2c1123::t_86b2afbbd5530f 1-32
+openspec/specs/provider-resolution/spec.md
+  s_5a7a28af6455a3::t_19e57d7f894319 1-136
+src/format.test.ts
+  s_c20eeaea2c1123::t_840b12a8ea7850 1-205
+src/format.ts
+  s_c20eeaea2c1123::t_7e60990dceb405 1-95
+src/roles.ts
+  s_c20eeaea2c1123::t_70250e9e69814c 1-22
+src/runway.test.ts
+  s_c20eeaea2c1123::t_bd34f77a846ff8 1-468
+src/runway.ts
+  s_c20eeaea2c1123::t_89b2464814797c 1-84
+src/solid-dist.d.ts
+  s_c20eeaea2c1123::t_2e5caaf1814d86 1-9
+src/status.test.ts
+  s_c20eeaea2c1123::t_0f3fef495be9c5 1-171
+src/status.ts
+  s_c20eeaea2c1123::t_373d90ed097b2a 1-59
+src/token.test.ts
+  s_c20eeaea2c1123::t_5ddbe4f5ab648e 1-102
+src/tui.test.tsx
+  s_5a7a28af6455a3::t_fbc6726274ef75 1-1490
+tsconfig.json
+  s_c20eeaea2c1123::t_b43151c190cd05 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "3617bf49e987ff572f1157df04049842035f546d",
+  "prompts": {},
+  "sessions": {
+    "s_5a7a28af6455a3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ed57861f0ffeBcRFNExuMP7vom",
+        "model": "MiniMax-M3.1-Flash-Preview"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    },
+    "s_c20eeaea2c1123": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_efacd1487ffeAAZNpPc0XBNUsX",
+        "model": "glm-5.3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
