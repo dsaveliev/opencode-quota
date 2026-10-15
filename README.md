@@ -120,20 +120,42 @@ failing endpoint is not flagged while refreshes keep landing.
 > **Module contract** (OpenCode ≥ 1.18): the runtime entry detector reads
 > `mod.default` — the entrypoint must `export default { id, tui }` (as
 > `src/index.ts` does). Named exports are NOT detected.
+>
+> **Stable symlink** (recommended): register the plugin through a
+> `~/Sync/Repo/opencode-quota-runway-plugin` symlink rather than the
+> source-tree path. The symlink decouples the registration from the
+> source directory's name, so future renames only touch the symlink.
+> The drift test (`src/install.test.ts`) checks the README and the
+> live `~/.config/opencode/tui.json` agree on this path.
 
 ### a) From a local copy — global, every project (TUI config)
 
-Register in `~/.config/opencode/tui.json` with a `file://` URL:
+Create the symlink and register the symlinked path:
+
+```sh
+ln -sfn "$HOME/Sync/Repo/opencode-quota" "$HOME/Sync/Repo/opencode-quota-runway-plugin"
+```
+
+The `~/.config/opencode/tui.json` entry that this README documents
+(and the drift test compares against):
 
 ```json
-{ "plugin": ["file:///absolute/path/to/opencode-quota/src/index.ts"] }
+{ "plugin": ["file://$HOME/Sync/Repo/opencode-quota-runway-plugin/src/index.ts"] }
 ```
+
+`$HOME` is substituted by your shell on copy (or manually). The
+symlink is what makes the load survive a later rename of the
+source directory — the plugin id stays `opencode-quota-runway`
+regardless.
 
 ### b) From a local copy — per-project (opencode.json)
 
 ```json
 { "plugin": ["./path/to/opencode-quota/src/index.ts"] }
 ```
+
+A relative path is fine here, but you can also point at the
+symlink: `"./opencode-quota-runway-plugin/src/index.ts"`.
 
 Run `bun install` in the repo so `solid-js` / `@opentui` resolve for the test
 suite; the OpenCode host provides them at runtime.
@@ -143,10 +165,23 @@ suite; the OpenCode host provides them at runtime.
 ```json
 {
   "plugin": [
-    ["file:///abs/path/to/opencode-quota/src/index.ts", { "intervalMs": 300000, "gaugeWidth": 26 }]
+    ["file://$HOME/Sync/Repo/opencode-quota-runway-plugin/src/index.ts", { "intervalMs": 300000, "gaugeWidth": 26 }]
   ]
 }
 ```
+
+### d) Renaming the source tree
+
+When the source directory moves or is renamed (for example
+`mv ~/Sync/Repo/opencode-quota ~/Sync/Repo/opencode-quota-v2`),
+the symlink is the only thing that needs touching:
+
+```sh
+ln -sfn "$HOME/Sync/Repo/opencode-quota-v2" "$HOME/Sync/Repo/opencode-quota-runway-plugin"
+```
+
+`~/.config/opencode/tui.json` is unchanged; the plugin still loads
+under the id `opencode-quota-runway` after a restart.
 
 ## Configuration
 
