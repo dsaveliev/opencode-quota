@@ -1,0 +1,24 @@
+src/tui.test.tsx
+  s_7d90a7c78d4b18::t_aaeb1db18c0862 100-101
+  s_7d90a7c78d4b18::t_a756c2369b6426 46-49
+  s_7d90a7c78d4b18::t_55c6e50cb77439 405-431
+src/tui.tsx
+  s_7d90a7c78d4b18::t_6ba45dcd4d46a1 381-400,411
+  s_7d90a7c78d4b18::t_09d34ff9abf7a6 467
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "05224c83acadf5e0e009c65735c869efab7c5ad8",
+  "prompts": {},
+  "sessions": {
+    "s_7d90a7c78d4b18": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ebe8dd1ceffeUgWq0YqUAJKHOx",
+        "model": "MiniMax-M3.1-Flash-Preview"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
