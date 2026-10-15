@@ -326,6 +326,18 @@ using no deprecated `api.command.*` APIs, and SHALL dispose all
 timers, event subscriptions, and the keymap layer on plugin
 dispose.
 
+#### Scenario: provider resolved after startup mounts the slots once
+
+- **WHEN** the plugin loads with no resolvable quota provider (the
+  OpenCode TUI booted on the home screen, the session cache has no
+  model yet, or the provider is switched in later) and a session
+  with a quota provider is selected afterwards
+- **THEN** `api.slots.register` is called at that point and not at
+  load time, the sidebar panel and status chip render for the whole
+  session, a refresh is scheduled for the newly resolved provider,
+  and further provider events do not register a second set of slots;
+  an unrecognized provider still leaves the panel unregistered
+
 #### Scenario: clean load and dispose
 
 - **WHEN** the plugin is loaded and then OpenCode disposes it
