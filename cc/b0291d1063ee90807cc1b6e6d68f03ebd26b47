@@ -1,0 +1,19 @@
+openspec/specs/opencode-quota-runway/spec.md
+  s_7d90a7c78d4b18::t_66556a496d0662 329-340
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "ccb0291d1063ee90807cc1b6e6d68f03ebd26b47",
+  "prompts": {},
+  "sessions": {
+    "s_7d90a7c78d4b18": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ebe8dd1ceffeUgWq0YqUAJKHOx",
+        "model": "MiniMax-M3.1-Flash-Preview"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
