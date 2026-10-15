@@ -378,6 +378,26 @@ export async function createTuiPlugin(
   // surface the model's id (or "unknown") instead of a blank message.
   let lastKnownProviderId: string | null = null
 
+  // Slot registration is deferred, not decided once at init: the provider
+  // can resolve AFTER startup (opencode booted on the home screen, a cold
+  // session cache, or /model later), and the init-only gate skipped the
+  // registration for the whole session — the fetch engine ran, the panel
+  // never mounted. An unknown provider still hides the panel; the first
+  // non-null provider mounts it, exactly once.
+  let slotsRegistered = false
+  function ensureSlots(): void {
+    if (slotsRegistered || !activeProvider()) return
+    if (!config.panel && !config.chip) return
+    slotsRegistered = true
+    api.slots.register({
+      order: 50,
+      slots: {
+        ...(config.panel ? { sidebar_content: renderPanel } : {}),
+        ...(config.chip ? { session_prompt_right: renderChip } : {}),
+      },
+    })
+  }
+
   // Active-provider switch. Wipe the visible state (rows/error/freshness)
   // so the panel doesn't keep showing the previous provider's data while
   // the new fetch is in flight; then trigger a forced refresh.
@@ -388,6 +408,7 @@ export async function createTuiPlugin(
     // activeProvider mismatch via its post-await guard and discard the result.
     inFlight = null
     setActiveProvider(next)
+    ensureSlots()
     setRows([])
     setError(null)
     setUpdatedAt(null)
@@ -443,15 +464,7 @@ export async function createTuiPlugin(
   // order 50 renders the panel as the FIRST sidebar section, above Context.
   // NOTE: slots.register returns the assigned slot ID string — slot lifetime
   // is managed by the host (tracked dispose), so there is nothing to call.
-  if (activeProvider() && (config.panel || config.chip)) {
-    api.slots.register({
-      order: 50,
-      slots: {
-        ...(config.panel ? { sidebar_content: renderPanel } : {}),
-        ...(config.chip ? { session_prompt_right: renderChip } : {}),
-      },
-    })
-  }
+  ensureSlots()
 
   const disposeLayer = api.keymap.registerLayer({
     commands: [

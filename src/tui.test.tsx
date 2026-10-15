@@ -43,7 +43,10 @@ const TOKEN_HEXES = [
   THEME_HEX.error,
 ]
 
-function fakeApi(providerId: string = "zhipuai-coding-plan") {
+/** `sessionReady=false` models a cold session cache: opencode has a route
+ *  session but `state.session.get(sid)` has not populated `model` yet, so
+ *  no quota provider resolves during plugin init. */
+function fakeApi(providerId: string = "zhipuai-coding-plan", sessionReady = true) {
   const slots: any[] = []
   const layers: any[] = []
   const handlers = new Map<string, any>()
@@ -94,7 +97,8 @@ function fakeApi(providerId: string = "zhipuai-coding-plan") {
     },
     state: {
       session: {
-        get: (_id: string) => ({ model: { id: "glm-5.3", providerID: providerId } }),
+        get: (_id: string) =>
+          sessionReady ? { model: { id: "glm-5.3", providerID: providerId } } : undefined,
       },
     },
     route: {
@@ -396,6 +400,33 @@ describe("createTuiPlugin wiring", () => {
 
     if (savedMiniMax === undefined) delete process.env.MINIMAX_API_KEY
     else process.env.MINIMAX_API_KEY = savedMiniMax
+  })
+
+  test("a provider that resolves after startup registers the slots exactly once", async () => {
+    // Repro: opencode boots on the home screen or with a cold session cache,
+    // so no quota provider resolves during init and the slot registration
+    // used to be skipped for the whole session — the fetch engine ran, the
+    // panel never mounted. Selecting a session with a quota provider must
+    // mount the panel, and a later re-select must not double-register.
+    const f = fakeApi("zhipuai-coding-plan", false)
+    await createTuiPlugin(f.api, OPT, {})
+    pendingDispose.push(() => f.handlers.get("__dispose")?.())
+    expect(f.slots.length).toBe(0) // no provider at init -> nothing to mount
+
+    f.api.state.session.get = (_id: string) => ({
+      model: { id: "glm-5.3", providerID: "zhipuai-coding-plan" },
+    })
+    f.handlers.get("tui.session.select")({ properties: { sessionID: "test-session" } })
+    expect(f.slots.length).toBe(1)
+    expect(Object.keys(f.slots[0].slots)).toContain("sidebar_content")
+    await tick()
+    expect(fetchCalls).toBe(1) // the late provider also triggers the first fetch
+
+    // Idempotent: re-selecting the same provider must not register a
+    // second set of slots (the host would render the panel twice).
+    f.handlers.get("tui.session.select")({ properties: { sessionID: "test-session" } })
+    await tick()
+    expect(f.slots.length).toBe(1)
   })
 
   test("session.idle within intervalMs/2 is throttled away", async () => {
