@@ -1,0 +1,48 @@
+README.md
+  s_ce02344d83f30d::t_e6b4f22ee3a6d5 123-129,133-140,143,146-150,157-159,168,173-184
+  s_0ceac03aef2099::t_5d693c3aed1100 185
+openspec/specs/opencode-quota-runway/spec.md
+  s_ce02344d83f30d::t_944c2cb956aae3 336-388
+src/install.test.ts
+  s_ce02344d83f30d::t_c49430204a8661 1-70
+openspec/changes/archive/2026-10-15-fix-tui-json-stale-plugin-path/.openspec.yaml
+  s_ce02344d83f30d::t_1e3882932d923e 1-2
+openspec/changes/archive/2026-10-15-fix-tui-json-stale-plugin-path/proposal.md
+  s_a0cd66bdaec5fd::t_3e8bca492ca594 1-69
+openspec/changes/archive/2026-10-15-fix-tui-json-stale-plugin-path/specs/opencode-quota-runway/spec.md
+  s_a0cd66bdaec5fd::t_9d9e6dc8d95b42 1-53
+openspec/changes/archive/2026-10-15-fix-tui-json-stale-plugin-path/tasks.md
+  s_0ceac03aef2099::t_b99ccf41ed262d 1-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "301a2ef7721134ae02002ae9122780dc223f6bf2",
+  "prompts": {},
+  "sessions": {
+    "s_0ceac03aef2099": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ec0f2561effepeuL5BE9q37pFY",
+        "model": "MiniMax-M3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    },
+    "s_a0cd66bdaec5fd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ec1066ef3ffeDkbtaS58ICKpB1",
+        "model": "MiniMax-M3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    },
+    "s_ce02344d83f30d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ec0f957ebffeVUwR8TK8XlfNK3",
+        "model": "MiniMax-M3"
+      },
+      "human_author": "Dima Savelyev <dmitrii.savelyev@deliveryhero.com>"
+    }
+  }
+}
