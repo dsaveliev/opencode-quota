@@ -505,6 +505,37 @@ describe("createTuiPlugin wiring", () => {
     }
   })
 
+  test("dispose detaches every event subscription, including session.updated", async () => {
+    // Spec: "every event subscription is detached" on dispose. The
+    // session.updated fallback handler was registered but never unsubscribed,
+    // so every plugin reload stacked another live handler.
+    const f = fakeApi()
+    await createTuiPlugin(f.api, OPT, {})
+    await tick()
+
+    for (const type of [
+      "session.idle",
+      "session.error",
+      "session.next.model.switched",
+      "tui.session.select",
+      "session.updated",
+    ]) {
+      expect(f.handlers.has(type)).toBe(true)
+    }
+
+    f.handlers.get("__dispose")!()
+
+    for (const type of [
+      "session.idle",
+      "session.error",
+      "session.next.model.switched",
+      "tui.session.select",
+      "session.updated",
+    ]) {
+      expect(f.handlers.has(type)).toBe(false)
+    }
+  })
+
   test("keymap command forces refresh and toasts the summary", async () => {
     const f = fakeApi()
     await createTuiPlugin(f.api, OPT, {})

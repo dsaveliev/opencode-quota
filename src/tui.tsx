@@ -517,6 +517,7 @@ export async function createTuiPlugin(
     offErr()
     offModelSwitched()
     offTuiSession()
+    offSessionUpdated()
     disposeLayer?.()
   })
 }
